@@ -11,6 +11,9 @@ const DIFFBOT_API_URL = "https://api.diffbot.com/v3/analyze";
 
 export const runtime = 'edge';
 
+export const maxDuration = 60;
+
+
 
 async function handler(req: NextRequest) {
   try {
