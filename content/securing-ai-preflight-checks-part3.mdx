@@ -1,0 +1,521 @@
+---
+title: 'Building a Tiered Architecture for AI Preflight Checks'
+date: '2025-01-15'
+description: 'Learn how to design and implement a robust, tiered architecture for AI input validation. This technical deep dive explores how to structure preflight checks for efficiency, maintainability, and scalability.'
+tags:
+  [
+    'system-architecture',
+    'preflight-checks',
+    'typescript',
+    'ai-security',
+    'performance-optimization',
+    'software-design',
+  ]
+image: '/blog/pyramid.png'
+author:
+  name: 'Michael Hurhangee'
+  avatar: '/bilbo.jpg'
+  link: '/aboutme'
+---
+
+# Building a Tiered Architecture for AI Preflight Checks
+
+In our [previous articles](/blog/securing-ai-preflight-checks-part2), we explored why preflight checks are essential for AI applications and how to balance freedom with moderation. Now, let's dive into the technical implementation of these systems, focusing on the architecture that makes them efficient, maintainable, and scalable.
+
+A well-designed preflight checks system should be:
+
+1. **Fast**: Providing immediate feedback without noticeable delays
+2. **Cost-effective**: Minimizing expensive operations
+3. **Comprehensive**: Covering various types of problematic inputs
+4. **Maintainable**: Easy to update as new threats emerge
+5. **Scalable**: Growing with your user base and use cases
+
+Let's explore how a tiered architecture helps achieve these goals.
+
+## The Tiered Approach: A Performance-First Design
+
+The core insight that drives our architecture is that not all checks are created equal. Some are simple and fast, while others require API calls or complex processing. By organizing checks into tiers based on their performance characteristics, we can optimize the validation process.
+
+### Defining the Tiers
+
+Here's how we organize our preflight checks into distinct tiers:
+
+```typescript
+// Organize checks into tiers for better performance
+const tier1Checks: PreflightCheck[] = [
+  inputLengthCheck, // Very fast, basic validation
+  inputSanitizationCheck, // Protect against script injection
+  blacklistedKeywordsCheck, // Check for blacklisted terms
+  languageCheck, // Only allow English content
+  enhancedRateLimitCheck, // IP-based protection
+];
+
+const tier2Checks: PreflightCheck[] = [
+  rateLimitGlobalCheck, // Check global rate limit
+  rateLimitUserCheck, // Check user-specific rate limit
+];
+
+const tier3Checks: PreflightCheck[] = [
+  contentModerationCheck, // OpenAI moderation API
+];
+
+const tier4Checks: PreflightCheck[] = [
+  aiContentAnalysisCheck, // More expensive AI analysis
+];
+```
+
+Each tier represents a group of checks with similar performance characteristics:
+
+- **Tier 1**: Extremely fast checks (microseconds to milliseconds) that run entirely on your server
+- **Tier 2**: Slightly more complex checks (tens of milliseconds) that may involve database lookups
+- **Tier 3**: Slower checks (hundreds of milliseconds) that typically involve external API calls
+- **Tier 4**: Advanced checks (seconds) that might involve sophisticated AI processing
+
+### Processing Flow
+
+The key advantage of this tiered approach is that we can process checks in order of increasing complexity and cost:
+
+```typescript
+export async function runPreflightChecks(
+  userId: string,
+  input: string | Message[],
+  ip?: string,
+  userAgent?: string
+): Promise<PreflightResult> {
+  try {
+    // Extract messages and lastMessage from input...
+
+    console.log('Starting preflight checks');
+
+    // Run each tier sequentially, stopping if any check fails
+    const tier1Result = await runTierChecks(
+      userId,
+      messages,
+      lastMessage,
+      tier1Checks,
+      ip,
+      userAgent
+    );
+    if (tier1Result) return tier1Result;
+
+    const tier2Result = await runTierChecks(
+      userId,
+      messages,
+      lastMessage,
+      tier2Checks,
+      ip,
+      userAgent
+    );
+    if (tier2Result) return tier2Result;
+
+    const tier3Result = await runTierChecks(
+      userId,
+      messages,
+      lastMessage,
+      tier3Checks,
+      ip,
+      userAgent
+    );
+    if (tier3Result) return tier3Result;
+
+    const tier4Result = await runTierChecks(
+      userId,
+      messages,
+      lastMessage,
+      tier4Checks,
+      ip,
+      userAgent
+    );
+    if (tier4Result) return tier4Result;
+
+    // All checks passed
+    return { passed: true };
+  } catch (error) {
+    // Handle errors...
+  }
+}
+```
+
+This flow provides several benefits:
+
+1. **Early Rejection**: Obvious issues are caught immediately without wasting resources
+2. **Cost Control**: Expensive operations only run when necessary
+3. **Progressive Enhancement**: Basic safety is maintained even if advanced checks fail
+
+## The Building Blocks: Check Interfaces and Contracts
+
+The foundation of our system is a clear, consistent interface for individual checks:
+
+```typescript
+// The core interface all checks must implement
+export interface PreflightCheck {
+  name: string;
+  description: string;
+  run: (params: PreflightParams) => Promise<CheckResult>;
+}
+
+// Parameters provided to each check
+export interface PreflightParams {
+  userId: string;
+  messages: Message[];
+  lastMessage: string;
+  ip?: string;
+  userAgent?: string;
+}
+
+// Standardized result format
+export interface CheckResult {
+  passed: boolean;
+  code: string;
+  message: string;
+  details?: any;
+  severity: 'warning' | 'error' | 'info';
+}
+```
+
+This consistent contract provides several advantages:
+
+1. **Modularity**: Each check is a self-contained module with clear inputs and outputs
+2. **Extensibility**: New checks can be added without changing the core system
+3. **Testability**: Individual checks can be tested in isolation
+4. **Clarity**: Standard result format makes integration and error handling consistent
+
+## The Execution Engine: Running Tier Checks
+
+The heart of our system is the function that processes checks within a tier:
+
+```typescript
+// Run checks from a specific tier
+async function runTierChecks(
+  userId: string,
+  messages: Message[],
+  lastMessage: string,
+  checks: PreflightCheck[],
+  ip?: string,
+  userAgent?: string
+): Promise<PreflightResult | null> {
+  for (const check of checks) {
+    console.log(`Running check: ${check.name}`);
+    const result = await check.run({ userId, messages, lastMessage, ip, userAgent });
+
+    if (!result.passed) {
+      // For certain content issues, increment the warning counter
+      if (
+        [
+          'blacklisted_keywords',
+          'moderation_flagged',
+          'ethical_concerns',
+          'extremely_negative',
+        ].includes(result.code) &&
+        ip &&
+        ip !== 'unknown'
+      ) {
+        try {
+          // Import here to avoid circular dependencies
+          const { incrementWarningCount } = await import('./checks/enhanced-rate-limit-check');
+          await incrementWarningCount(ip);
+        } catch (error) {
+          console.error('Failed to increment warning count:', error);
+        }
+      }
+
+      return {
+        passed: false,
+        failedCheck: check.name,
+        result,
+      };
+    }
+  }
+
+  return null; // All checks passed
+}
+```
+
+This function handles several important responsibilities:
+
+1. **Sequential Processing**: Runs each check in order
+2. **Early Termination**: Exits as soon as a check fails
+3. **Warning Tracking**: Increments counters for problematic content
+4. **Standardized Results**: Wraps check results in a consistent format
+5. **Logging**: Records each step for debugging and monitoring
+
+## Handling Input Variations
+
+AI applications often receive inputs in different formats (single messages, message history, etc.), so our system normalizes these variations:
+
+```typescript
+// Extract the last message or use the input directly if it's a string
+let messages: Message[] = [];
+let lastMessage = '';
+
+if (typeof input === 'string') {
+  // If input is a string, create a single user message
+  lastMessage = input;
+  messages = [
+    {
+      role: 'user' as const,
+      content: input,
+    },
+  ];
+} else {
+  // If input is an array of messages, extract the last user message
+  messages = input;
+  const userMessages = messages.filter((m) => m.role === 'user');
+  const lastUserMessage = userMessages.length > 0 ? userMessages[userMessages.length - 1] : null;
+  if (lastUserMessage) {
+    lastMessage = lastUserMessage.content;
+  }
+}
+```
+
+This preprocessing ensures that all checks receive consistent input data, regardless of how the input was originally provided.
+
+## Core System Design Principles
+
+Our preflight checks architecture embodies several important design principles:
+
+### 1. Single Responsibility Principle
+
+Each check does one thing and does it well. For example, the input length check focuses solely on validating message length:
+
+```typescript
+export const inputLengthCheck: PreflightCheck = {
+  name: 'input_length',
+  description: 'Checks if the input meets the length requirements',
+  run: async ({ lastMessage }) => {
+    const minLength = 4;
+    const maxLength = 1000;
+
+    if (!lastMessage || lastMessage.trim().length < minLength) {
+      return {
+        passed: false,
+        code: 'input_too_short',
+        message: 'Input is too short',
+        details: { minLength, actualLength: lastMessage?.length || 0 },
+        severity: 'info',
+      };
+    }
+
+    if (lastMessage.length > maxLength) {
+      return {
+        passed: false,
+        code: 'input_too_long',
+        message: 'Input exceeds maximum length',
+        details: { maxLength, actualLength: lastMessage.length },
+        severity: 'info',
+      };
+    }
+
+    return {
+      passed: true,
+      code: 'input_length_valid',
+      message: 'Input length is valid',
+      severity: 'info',
+    };
+  },
+};
+```
+
+This isolation makes each check easier to understand, test, and maintain.
+
+### 2. Graceful Degradation
+
+The system is designed to provide meaningful security even if some components fail:
+
+```typescript
+catch (error) {
+  console.error('Unexpected error in preflight checks:', error);
+
+  // Handle any errors that occurred during checks
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error during preflight checks';
+
+  return {
+    passed: false,
+    failedCheck: 'system_error',
+    result: {
+      passed: false,
+      code: 'system_error',
+      message: errorMessage,
+      severity: 'error'
+    }
+  };
+}
+```
+
+By failing closed (rejecting inputs when errors occur), we ensure that system issues don't create security gaps.
+
+### 3. Comprehensive Logging
+
+Detailed logging throughout the system helps with monitoring, debugging, and security forensics:
+
+```typescript
+console.log(`Running check: ${check.name}`);
+// Later in the code...
+console.warn(`Content moderation: Content flagged in categories: ${flaggedCategories.join(', ')}`);
+```
+
+This visibility is crucial for maintaining and improving the system over time.
+
+## Scaling and Performance Considerations
+
+As your application grows, several strategies can help your preflight checks scale:
+
+### 1. Caching Common Results
+
+For checks like keyword blacklisting, caching results for frequently seen inputs can improve performance:
+
+```typescript
+// Pseudocode for adding caching to checks
+const cache = new Map();
+
+function withCaching(check) {
+  return async (params) => {
+    const cacheKey = `${check.name}:${params.lastMessage}`;
+
+    if (cache.has(cacheKey)) {
+      return cache.get(cacheKey);
+    }
+
+    const result = await check.run(params);
+    cache.set(cacheKey, result);
+    return result;
+  };
+}
+```
+
+### 2. Parallel Processing Within Tiers
+
+While we process tiers sequentially, checks within a tier could potentially run in parallel if they don't depend on each other:
+
+```typescript
+// Pseudocode for parallel processing within tiers
+async function runTierChecksParallel(userId, messages, lastMessage, checks) {
+  const results = await Promise.all(
+    checks.map((check) => check.run({ userId, messages, lastMessage }))
+  );
+
+  const failedCheck = results.find((result) => !result.passed);
+  if (failedCheck) {
+    return {
+      passed: false,
+      failedCheck: check.name,
+      result: failedCheck,
+    };
+  }
+
+  return null; // All checks passed
+}
+```
+
+This approach speeds up processing but requires careful consideration of race conditions and error handling.
+
+### 3. Adaptive Tier Selection
+
+For trusted users or specific contexts, you might skip certain tiers entirely:
+
+```typescript
+// Pseudocode for adaptive tier selection
+if (user.trustLevel === 'high' && !containsSensitiveKeywords(lastMessage)) {
+  // Skip tier3 and tier4 for trusted users with benign-looking content
+  return runMinimalChecks(userId, messages, lastMessage);
+}
+```
+
+### 4. Distributed Processing
+
+For large-scale applications, distributing checks across multiple services can improve throughput:
+
+```typescript
+// Pseudocode for a distributed check architecture
+async function distributedContentModeration(message) {
+  // Send moderation request to a dedicated service
+  const response = await fetch('https://moderation-service/check', {
+    method: 'POST',
+    body: JSON.stringify({ message }),
+  });
+
+  return await response.json();
+}
+```
+
+## Integration Points
+
+Our preflight system integrates with the rest of your application at several points:
+
+### 1. API Endpoints
+
+Typically integrated at API endpoints before processing user inputs:
+
+```typescript
+// Pseudocode for API integration
+app.post('/api/chat', async (req, res) => {
+  const { userId, message } = req.body;
+  const ip = req.headers['x-forwarded-for'] || req.ip;
+
+  // Run preflight checks
+  const preflightResult = await runPreflightChecks(userId, message, ip);
+
+  if (!preflightResult.passed) {
+    // Return appropriate error to the client
+    return res.status(400).json({
+      error: preflightResult.result.message,
+      code: preflightResult.result.code,
+    });
+  }
+
+  // Proceed with normal API processing
+  const aiResponse = await generateAIResponse(message);
+  return res.json({ response: aiResponse });
+});
+```
+
+### 2. User Interface Integration
+
+Error messages from preflight checks should be presented clearly in the UI:
+
+```typescript
+// Pseudocode for UI integration
+export type ErrorDisplayConfig = {
+  title: string;
+  description: string;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+  severity: 'warning' | 'error' | 'info';
+};
+
+export type ErrorDisplayMap = {
+  [checkCode: string]: (result: CheckResult) => ErrorDisplayConfig;
+};
+
+// Sample implementation
+const errorDisplayMap: ErrorDisplayMap = {
+  input_too_long: (result) => ({
+    title: 'Message Too Long',
+    description: `Please keep your message under ${result.details.maxLength} characters.`,
+    action: {
+      label: 'Edit Message',
+      onClick: () => focusInputField(),
+    },
+    severity: result.severity,
+  }),
+  // Other error mappings...
+};
+```
+
+## Conclusion
+
+A well-designed tiered architecture for preflight checks balances security, performance, and user experience. By organizing checks from fastest to most resource-intensive, we ensure efficient processing while maintaining comprehensive protection.
+
+This approach allows us to:
+
+- Reject problematic inputs as early as possible
+- Minimize costs for external API calls
+- Provide fast feedback to users
+- Maintain a modular, extensible system
+- Scale effectively as our application grows
+
+In the next article, we'll dive into detailed implementations of specific checks, examining how each one works and the tradeoffs involved.
+
+Remember that successful preflight checks aren't just about technical implementation—they're about creating a safe, responsive environment where users can interact with AI systems confidently and effectively.

@@ -1,0 +1,393 @@
+---
+title: 'Implementing User-Based Rate Limiting for AI Applications'
+date: '2025-02-05'
+description: 'Learn how to implement effective user-based rate limiting to protect your AI services from overuse while providing a fair experience for all users.'
+tags:
+  ['rate-limiting', 'user-protection', 'redis', 'api-security', 'typescript', 'cloud-architecture']
+image: '/blog/vip.png'
+author:
+  name: 'Michael Hurhangee'
+  avatar: '/bilbo.jpg'
+  link: '/aboutme'
+---
+
+# Implementing User-Based Rate Limiting for AI Applications
+
+In our [previous article](/blog/securing-ai-preflight-checks-part5-enhanced-ratelimit), we explored IP-based rate limiting with warning tracking. Now, let's examine another critical layer of protection: user-based rate limiting.
+
+While IP-based limits help protect against automated attacks, user-based rate limiting ensures fair resource allocation among authenticated users. This is especially important for AI applications where each request may consume significant computational resources.
+
+## Understanding User-Based Rate Limiting
+
+User-based rate limiting tracks requests by user ID rather than IP address. This approach offers several advantages:
+
+1. **Persistent Identity**: User IDs are more stable than IP addresses
+2. **Account-Level Control**: Limits can be tied to subscription tiers
+3. **Fairness**: Prevents individual users from monopolizing resources
+4. **Analytics**: Provides insights into per-user usage patterns
+
+Let's explore how to implement user-based rate limiting as part of our preflight checks system.
+
+## Implementing User-Based Rate Limiting
+
+Here's a straightforward implementation using Redis for distributed state management:
+
+```typescript
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+import { PreflightCheck } from '../types';
+
+// Initialize Redis
+const redis = Redis.fromEnv();
+
+// User-specific rate limiter
+const userRateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, '1 h'), // 20 requests per hour per user
+  analytics: true,
+  prefix: 'ratelimit:user:',
+});
+
+export const rateLimitUserCheck: PreflightCheck = {
+  name: 'rate_limit_user',
+  description: 'Checks if the user has exceeded their rate limit',
+  run: async ({ userId, lastMessage }) => {
+    try {
+      // Skip if no user ID provided
+      if (!userId || userId === 'anonymous') {
+        return {
+          passed: true,
+          code: 'user_rate_limit_skipped',
+          message: 'Anonymous user, skipping user rate limit check',
+          severity: 'info',
+        };
+      }
+
+      // Skip if no content to process
+      if (!lastMessage || lastMessage.trim().length === 0) {
+        return {
+          passed: true,
+          code: 'user_rate_limit_skipped',
+          message: 'No content to check',
+          severity: 'info',
+        };
+      }
+
+      console.log(`User rate limit: Checking limit for user ${userId}`);
+
+      // Check the user's rate limit
+      const rateLimit = await userRateLimiter.limit(userId);
+
+      // Wait for any pending tasks
+      await rateLimit.pending;
+
+      // If rate limit exceeded
+      if (!rateLimit.success) {
+        console.warn(`User rate limit exceeded for user ${userId}`);
+
+        // Calculate reset time
+        const resetDate = new Date(rateLimit.reset);
+        const timeRemaining = Math.ceil((resetDate.getTime() - Date.now()) / 1000 / 60);
+
+        return {
+          passed: false,
+          code: 'user_rate_limited',
+          message: 'You have reached your request limit',
+          details: {
+            resetInMinutes: timeRemaining,
+            resetAt: resetDate.toISOString(),
+            remaining: 0,
+            limit: rateLimit.limit,
+          },
+          severity: 'error',
+        };
+      }
+
+      // If within rate limit
+      return {
+        passed: true,
+        code: 'user_rate_limit_passed',
+        message: 'User rate limit check passed',
+        details: {
+          remaining: rateLimit.remaining,
+          limit: rateLimit.limit,
+        },
+        severity: 'info',
+      };
+    } catch (error) {
+      console.error('User rate limit error:', error);
+
+      // In case of error, we should still allow the request
+      return {
+        passed: true,
+        code: 'user_rate_limit_error',
+        message: 'Error in user rate limit check',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        severity: 'warning',
+      };
+    }
+  },
+};
+```
+
+This implementation provides a clean, focused rate limiting system specifically for user identities. It:
+
+1. Creates a Redis-backed rate limiter with a sliding window of 20 requests per hour
+2. Skips checks for anonymous users or empty messages
+3. Enforces the limit for authenticated users
+4. Provides clear feedback when limits are exceeded
+5. Includes proper error handling to avoid breaking the application
+
+## The Sliding Window Algorithm
+
+The sliding window algorithm used by Upstash deserves special attention, as it offers several advantages over simpler rate limiting approaches:
+
+```typescript
+limiter: Ratelimit.slidingWindow(20, '1 h');
+```
+
+Unlike fixed window counters that reset at specific times (like the top of each hour), sliding windows provide a continuous moving timeframe. This prevents:
+
+1. **Edge spikes**: Users can't send 20 requests at 11:59 PM and another 20 at 12:01 AM
+2. **Uneven distribution**: Load is naturally smoothed across time
+
+The algorithm works by:
+
+- Tracking timestamps of requests in a sorted set
+- Removing entries older than the window period
+- Counting remaining entries to determine usage
+
+## Testing User-Based Rate Limiting
+
+To test this implementation, let's consider different scenarios:
+
+### Scenario 1: Normal Usage
+
+A user makes 15 requests in an hour:
+
+```
+Request 1: ✅ Limit: 20, Remaining: 19
+Request 2: ✅ Limit: 20, Remaining: 18
+...
+Request 15: ✅ Limit: 20, Remaining: 5
+```
+
+### Scenario 2: Limit Exceeded
+
+A user makes 25 requests in an hour:
+
+```
+Request 1: ✅ Limit: 20, Remaining: 19
+...
+Request 20: ✅ Limit: 20, Remaining: 0
+Request 21: ❌ Error: "You have reached your request limit"
+```
+
+### Scenario 3: Anonymous User
+
+A user without authentication makes requests:
+
+```
+Request 1: ✅ "Anonymous user, skipping user rate limit check"
+Request 2: ✅ "Anonymous user, skipping user rate limit check"
+...
+```
+
+Note that anonymous users would still be subject to IP-based rate limiting as shown in our previous article.
+
+## Integrating with User Tiers and Subscription Levels
+
+One of the powerful aspects of user-based rate limiting is the ability to tie limits to subscription tiers. Here's how you might extend this implementation:
+
+```typescript
+// A more sophisticated implementation with user tiers
+async function getUserRateLimit(userId: string) {
+  // Fetch user data including subscription tier
+  const userData = await redis.get(`user:${userId}`);
+  const user = userData ? JSON.parse(userData) : { tier: 'free' };
+
+  // Define limits based on tier
+  const tierLimits = {
+    free: 20,
+    basic: 50,
+    premium: 100,
+    enterprise: 500,
+  };
+
+  // Return appropriate limit
+  return tierLimits[user.tier] || tierLimits.free;
+}
+
+// Then in the rate limit check:
+const userLimit = await getUserRateLimit(userId);
+const rateLimit = await new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(userLimit, '1 h'),
+  analytics: true,
+  prefix: 'ratelimit:user:',
+}).limit(userId);
+```
+
+## Pros and Cons of User-Based Rate Limiting
+
+### Pros
+
+1. **Identity-Based**: Tied to user accounts rather than network details
+2. **Customizable**: Easily adapted for different user tiers
+3. **Reliable**: User IDs don't change like IP addresses can
+4. **Fair Allocation**: Prevents individual users from consuming too many resources
+5. **Analytics Potential**: Provides insights into per-user consumption patterns
+
+### Cons
+
+1. **Auth Requirement**: Only works for authenticated users
+2. **Implementation Complexity**: Requires user authentication system
+3. **Redis Dependency**: Relies on external service for state management
+4. **Potential Privacy Concerns**: Tracking and storing user request patterns
+
+## Potential Improvements
+
+### 1. Adaptive Limits Based on Usage History
+
+```typescript
+async function getAdaptiveLimit(userId) {
+  // Get user's historical usage patterns
+  const usage = await getUserHistoricalUsage(userId);
+
+  // Adjust limit based on typical usage
+  if (usage.averagePerHour < 5) {
+    return 10; // Lower limit for light users
+  } else if (usage.averagePerHour > 15) {
+    return 30; // Higher limit for power users
+  }
+
+  return 20; // Default limit
+}
+```
+
+### 2. Quota Extension Mechanisms
+
+```typescript
+async function extendUserQuota(userId, additionalRequests) {
+  const key = `ratelimit:extension:${userId}`;
+  await redis.incrby(key, additionalRequests);
+  await redis.expire(key, 60 * 60); // 1 hour
+}
+
+// When checking limits
+const extension = (await redis.get(`ratelimit:extension:${userId}`)) || 0;
+const effectiveLimit = baseLimit + parseInt(extension);
+```
+
+### 3. Burst Handling with Token Bucket
+
+Unlike the sliding window, a token bucket algorithm would allow occasional bursts of activity:
+
+```typescript
+const tokenBucket = new Ratelimit({
+  redis,
+  limiter: Ratelimit.tokenBucket(20, '20 per hour', 5), // 20 per hour with max 5 burst
+  analytics: true,
+  prefix: 'ratelimit:user:bucket:',
+});
+```
+
+## Alternative Approaches
+
+### 1. Database-Backed Limiting
+
+For applications already using a database, you might implement rate limiting directly:
+
+```typescript
+// Pseudocode for database-backed limiting
+async function checkDatabaseRateLimit(userId) {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+  // Count recent requests
+  const count = await db.query(
+    `
+    SELECT COUNT(*) FROM requests 
+    WHERE user_id = $1 AND created_at > $2
+  `,
+    [userId, oneHourAgo]
+  );
+
+  return count < 20;
+}
+```
+
+### 2. Memory-Based Implementation
+
+For simple applications or services with a single instance:
+
+```typescript
+// Simple in-memory implementation
+const userRequests = new Map();
+
+function checkMemoryRateLimit(userId) {
+  const now = Date.now();
+  const oneHourAgo = now - 60 * 60 * 1000;
+
+  // Get or initialize user's request history
+  const requests = userRequests.get(userId) || [];
+
+  // Filter to recent requests only
+  const recentRequests = requests.filter((time) => time > oneHourAgo);
+
+  // Check if under limit
+  if (recentRequests.length < 20) {
+    // Add current request
+    recentRequests.push(now);
+    userRequests.set(userId, recentRequests);
+    return true;
+  }
+
+  return false;
+}
+```
+
+## Best Practices for User Rate Limiting
+
+1. **Clear Feedback**: Always inform users about their remaining quota and reset times
+2. **Graceful Degradation**: Consider allowing limited functionality even when rate limited
+3. **Monitoring**: Track rate limit events to identify potential issues or abuse
+4. **Adjustable Limits**: Build systems that allow easy adjustment of limits based on actual usage
+5. **Documentation**: Make your rate limits clear in user documentation
+
+## Real-World Considerations
+
+### Handling Shared Accounts
+
+Many enterprise environments have shared accounts. You might need additional logic:
+
+```typescript
+async function getRateLimitKey(userId) {
+  const user = await getUser(userId);
+
+  // If it's a shared account, use a department or team identifier
+  if (user.isSharedAccount) {
+    return `team:${user.teamId}`;
+  }
+
+  return userId;
+}
+```
+
+### Rate Limit Headers
+
+Consider adding rate limit information to response headers:
+
+```typescript
+// Adding headers to API responses
+res.setHeader('X-RateLimit-Limit', rateLimit.limit);
+res.setHeader('X-RateLimit-Remaining', rateLimit.remaining);
+res.setHeader('X-RateLimit-Reset', rateLimit.reset);
+```
+
+## Conclusion
+
+User-based rate limiting provides a critical layer of protection for your AI application, ensuring fair resource allocation and preventing abuse. By implementing this check as part of your preflight system, you create a more reliable, cost-efficient service for all users.
+
+While this implementation uses Redis for distributed state management, the core principles apply regardless of your specific technology stack. The key is having a reliable way to track and enforce limits on a per-user basis.
+
+In our next article, we'll explore global rate limiting that protects your entire system from overload, regardless of individual user or IP limits.

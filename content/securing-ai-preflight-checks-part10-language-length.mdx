@@ -1,0 +1,320 @@
+---
+title: 'Language Detection and Input Length Validation for AI Applications'
+date: '2025-03-01'
+description: 'Learn how to implement language detection and input length validation as your final layer of preflight checks for AI applications.'
+tags: ['language-detection', 'input-validation', 'preflight-checks', 'user-experience']
+image: '/blog/bunting.png'
+author:
+  name: 'Michael Hurhangee'
+  avatar: '/bilbo.jpg'
+  link: '/aboutme'
+---
+
+# Language Detection and Input Length Validation for AI Applications
+
+In our [previous article](/blog/securing-ai-preflight-checks-part9-ai-detection), we explored AI-generated content detection. Now, let's implement two final preflight checks that are simpler but equally important: language detection and input length validation.
+
+These checks help ensure that inputs to your AI system are:
+
+1. In languages your system can effectively handle
+2. Of appropriate length to process efficiently
+
+Let's explore each of these checks in turn.
+
+## 1. Language Detection
+
+Many AI applications are optimized for specific languages. While models like GPT-4 support multiple languages, you might want to restrict inputs to languages you can properly support or moderate.
+
+### Implementing Language Detection
+
+Here's a straightforward implementation using the language-detect library:
+
+```typescript
+import { franc } from 'franc';
+import { PreflightCheck } from '../types';
+
+export const languageCheck: PreflightCheck = {
+  name: 'language_check',
+  description: 'Checks if the input is in a supported language',
+  run: async ({ lastMessage }) => {
+    try {
+      // Skip if no content to analyze
+      if (!lastMessage || lastMessage.trim().length === 0) {
+        return {
+          passed: true,
+          code: 'language_check_skipped',
+          message: 'No content to analyze',
+          severity: 'info',
+        };
+      }
+
+      const text = lastMessage.trim();
+
+      // Need minimal content for reliable detection
+      if (text.length < 10) {
+        return {
+          passed: true,
+          code: 'language_check_too_short',
+          message: 'Text too short for reliable language detection',
+          severity: 'info',
+        };
+      }
+
+      console.log('Detecting language');
+
+      // Detect language using franc
+      const languageCode = franc(text);
+
+      // List of supported languages (ISO 639-3 codes)
+      const supportedLanguages = ['eng']; // English only
+
+      // Check if detected language is supported
+      if (supportedLanguages.includes(languageCode)) {
+        return {
+          passed: true,
+          code: 'supported_language',
+          message: 'Content is in a supported language',
+          details: { languageCode },
+          severity: 'info',
+        };
+      } else {
+        console.warn(`Unsupported language detected: ${languageCode}`);
+
+        return {
+          passed: false,
+          code: 'unsupported_language',
+          message: 'Please use English for your message',
+          details: {
+            detectedLanguage: languageCode,
+            supportedLanguages,
+          },
+          severity: 'error',
+        };
+      }
+    } catch (error) {
+      console.error('Language detection error:', error);
+
+      // In case of error, allow the content through
+      return {
+        passed: true,
+        code: 'language_detection_error',
+        message: 'Error in language detection',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        severity: 'warning',
+      };
+    }
+  },
+};
+```
+
+This implementation:
+
+1. Uses the franc library to detect the language of input text
+2. Compares against a list of supported languages (in this case, just English)
+3. Rejects content not in supported languages
+4. Includes proper error handling
+
+### Handling Multilingual Applications
+
+If your application supports multiple languages, simply expand the supported languages list:
+
+```typescript
+// List of supported languages (ISO 639-3 codes)
+const supportedLanguages = [
+  'eng', // English
+  'spa', // Spanish
+  'fra', // French
+  'deu', // German
+  'ita', // Italian
+  'por', // Portuguese
+  'jpn', // Japanese
+];
+```
+
+## 2. Input Length Validation
+
+Validating input length is crucial for:
+
+- Preventing token wastage on extremely long inputs
+- Ensuring minimal context for meaningful responses
+- Avoiding abuse through extremely short or long messages
+
+### Implementing Input Length Validation
+
+Here's a simple implementation:
+
+```typescript
+import { PreflightCheck } from '../types';
+
+export const inputLengthCheck: PreflightCheck = {
+  name: 'input_length',
+  description: 'Validates that input is of appropriate length',
+  run: async ({ lastMessage }) => {
+    try {
+      // Skip if no content to analyze
+      if (!lastMessage) {
+        return {
+          passed: false,
+          code: 'input_missing',
+          message: 'No input provided',
+          severity: 'error',
+        };
+      }
+
+      const text = lastMessage.trim();
+
+      // Define length constraints
+      const minLength = 4; // Characters
+      const maxLength = 4000; // Characters
+
+      // Check if input is too short
+      if (text.length < minLength) {
+        return {
+          passed: false,
+          code: 'input_too_short',
+          message: `Please provide a message with at least ${minLength} characters`,
+          details: {
+            currentLength: text.length,
+            minLength,
+          },
+          severity: 'error',
+        };
+      }
+
+      // Check if input is too long
+      if (text.length > maxLength) {
+        return {
+          passed: false,
+          code: 'input_too_long',
+          message: `Your message exceeds the maximum length of ${maxLength} characters`,
+          details: {
+            currentLength: text.length,
+            maxLength,
+            excessLength: text.length - maxLength,
+          },
+          severity: 'error',
+        };
+      }
+
+      // Input length is within acceptable range
+      return {
+        passed: true,
+        code: 'input_length_valid',
+        message: 'Input length is appropriate',
+        details: {
+          currentLength: text.length,
+          minLength,
+          maxLength,
+        },
+        severity: 'info',
+      };
+    } catch (error) {
+      console.error('Input length validation error:', error);
+
+      // In case of error, reject the input
+      return {
+        passed: false,
+        code: 'input_length_error',
+        message: 'Error validating input length',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        severity: 'error',
+      };
+    }
+  },
+};
+```
+
+This implementation:
+
+1. Defines minimum and maximum acceptable lengths
+2. Checks if input falls within these boundaries
+3. Provides helpful feedback when constraints are violated
+4. Includes proper error handling
+
+### Dynamic Length Limits
+
+For more sophisticated applications, you might adjust length limits based on factors like:
+
+```typescript
+function getDynamicLengthLimits(userId, subscription) {
+  // Default limits
+  const limits = {
+    min: 4,
+    max: 4000,
+  };
+
+  // Adjust based on subscription tier
+  if (subscription === 'premium') {
+    limits.max = 8000; // Premium users get longer limits
+  }
+
+  // Adjust based on user history
+  if (userId && userHasGoodHistory(userId)) {
+    limits.max = Math.min(limits.max * 1.2, 10000); // Up to 20% bonus
+  }
+
+  return limits;
+}
+```
+
+## Combining Both Checks
+
+These two checks work well early in your preflight pipeline, as they quickly filter out obviously unsuitable inputs:
+
+```typescript
+// Example preflight pipeline
+const preflightChecks = [
+  inputLengthCheck, // Quick validation first
+  languageCheck, // Then language detection
+  rateLimitUserCheck, // Rate limiting checks
+  blacklistedKeywordsCheck,
+  contentModerationCheck,
+  // ...other checks
+];
+```
+
+Running the simple, fast checks first improves overall system efficiency by quickly rejecting invalid inputs before performing more computationally expensive checks.
+
+## Pros and Cons
+
+### Language Detection
+
+**Pros:**
+
+- Ensures content is in languages you can properly support
+- Improves user experience by setting clear expectations
+- Helps focus resources on target markets/languages
+
+**Cons:**
+
+- May exclude potential users
+- Small chance of misdetection for short texts
+- Requires additional dependency (language detection library)
+
+### Input Length Validation
+
+**Pros:**
+
+- Simple to implement
+- Prevents token wastage
+- Avoids meaningless interactions (too short)
+- Protects against resource abuse (too long)
+
+**Cons:**
+
+- May frustrate users who want to provide very detailed context
+- Rigid limits may not account for all use cases
+- Character count isn't always the best measure (vs. tokens)
+
+## Conclusion
+
+Language detection and input length validation form the final layer of our preflight checks system. Though simpler than some of our previous checks, they play a crucial role in:
+
+1. Setting clear expectations for users
+2. Ensuring efficient use of resources
+3. Preventing basic forms of system abuse
+4. Improving overall user experience
+
+By combining these with our previously discussed checks—rate limiting, content moderation, blacklisted keywords, and AI detection—you create a robust, multi-layered defense system for your AI application.
+
+In our final article of this series, we'll bring everything together with a comprehensive implementation guide and performance optimization strategies for your complete preflight checks system.

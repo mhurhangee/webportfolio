@@ -1,0 +1,296 @@
+---
+title: "Using OpenAI's Moderation API for Content Filtering"
+date: '2025-02-19'
+description: "Learn how to implement OpenAI's Moderation API as a preflight check to detect and filter harmful content before it reaches your AI application."
+tags: ['openai', 'moderation', 'content-filtering', 'ai-safety', 'api-implementation']
+image: '/blog/moderation.png'
+author:
+  name: 'Michael Hurhangee'
+  avatar: '/bilbo.jpg'
+  link: '/aboutme'
+---
+
+# Using OpenAI's Moderation API for Content Filtering
+
+After covering [rate limiting strategies](/blog/securing-ai-preflight-checks-part7-global-ratelimit) in our previous articles, let's explore another critical preflight check: content moderation using OpenAI's dedicated API.
+
+While keyword blacklists can catch obvious issues, they often miss subtle harmful content or fail to understand context. OpenAI's Moderation API provides a more sophisticated solution that can detect various types of harmful content with much greater accuracy.
+
+## Understanding OpenAI's Moderation API
+
+The OpenAI Moderation API is a specialized endpoint designed specifically for content filtering. It:
+
+- Detects various categories of harmful content
+- Provides category-specific confidence scores
+- Works across multiple languages
+- Is optimized for speed and cost-efficiency
+- Is continually improved by OpenAI
+
+The API classifies content into categories including:
+
+- Violence
+- Sexual content
+- Hate speech
+- Self-harm
+- Harassment
+- And more
+
+## Implementing the OpenAI Moderation Check
+
+Here's how we implement OpenAI's Moderation API as a preflight check:
+
+```typescript
+import OpenAI from 'openai';
+import { PreflightCheck } from '../types';
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export const contentModerationCheck: PreflightCheck = {
+  name: 'content_moderation',
+  description: "Uses OpenAI's moderation API to detect harmful content",
+  run: async ({ lastMessage }) => {
+    try {
+      // Skip if no content to analyze
+      if (!lastMessage || lastMessage.trim().length === 0) {
+        return {
+          passed: true,
+          code: 'moderation_skipped',
+          message: 'No content to moderate',
+          severity: 'info',
+        };
+      }
+
+      // Clean the text (trim and limit length if needed)
+      const textToModerate = lastMessage.trim().slice(0, 4096);
+
+      console.log('Running content moderation check');
+
+      // Call the OpenAI moderation API
+      const moderation = await openai.moderations.create({
+        model: 'text-moderation-latest',
+        input: textToModerate,
+      });
+
+      // Check if any results were returned
+      if (!moderation.results || moderation.results.length === 0) {
+        return {
+          passed: true,
+          code: 'moderation_no_results',
+          message: 'No moderation results returned',
+          severity: 'warning',
+        };
+      }
+
+      // Get the first result (there's only one for a single input)
+      const result = moderation.results[0];
+
+      // If the content was flagged
+      if (result.flagged) {
+        console.warn('Content flagged by moderation API:', result.categories);
+
+        // Get the flagged categories
+        const flaggedCategories = Object.entries(result.categories)
+          .filter(([_, flagged]) => flagged)
+          .map(([category]) => category);
+
+        // Get the category scores
+        const categoryScores = Object.entries(result.category_scores)
+          .filter(([category]) => flaggedCategories.includes(category))
+          .reduce(
+            (acc, [category, score]) => {
+              acc[category] = score;
+              return acc;
+            },
+            {} as Record<string, number>
+          );
+
+        return {
+          passed: false,
+          code: 'moderation_flagged',
+          message: 'Content flagged by OpenAI Moderation',
+          details: {
+            flaggedCategories,
+            categoryScores,
+          },
+          severity: 'error',
+        };
+      }
+
+      // Content passed moderation
+      return {
+        passed: true,
+        code: 'moderation_passed',
+        message: 'Content passed OpenAI moderation',
+        severity: 'info',
+      };
+    } catch (error) {
+      console.error('Moderation API error:', error);
+
+      // In production, you might want to fail closed (reject on error)
+      // but for demonstration we'll fail open
+      return {
+        passed: true,
+        code: 'moderation_error',
+        message: 'Error checking content moderation',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        severity: 'warning',
+      };
+    }
+  },
+};
+```
+
+This implementation:
+
+1. Calls OpenAI's moderation endpoint with the user's message
+2. Processes the returned categories and scores
+3. Returns detailed results for any flagged content
+4. Includes proper error handling
+
+## Testing the Moderation API
+
+To test this implementation, let's consider these examples:
+
+### Example 1: Safe Content
+
+```
+Input: "I'd like to discuss artificial intelligence and its impact on society."
+Result: ✅ Passed (No categories flagged)
+```
+
+### Example 2: Violent Content
+
+```
+Input: "I want to hurt someone and make them suffer."
+Result: ❌ Failed
+Flagged Categories: ["violence"]
+Category Scores: { "violence": 0.92 }
+```
+
+### Example 3: Subtle Harmful Content
+
+```
+Input: "Here's how you can make a bomb at home..."
+Result: ❌ Failed
+Flagged Categories: ["violence"]
+Category Scores: { "violence": 0.88 }
+```
+
+The API can detect subtle harmful content that might bypass simpler keyword-based filters.
+
+## Key Categories and Their Thresholds
+
+The OpenAI Moderation API considers multiple categories of harmful content:
+
+```typescript
+// The categories returned by the API
+interface ModerationCategories {
+  sexual: boolean;
+  hate: boolean;
+  harassment: boolean;
+  'self-harm': boolean;
+  'sexual/minors': boolean;
+  'hate/threatening': boolean;
+  'violence/graphic': boolean;
+  'self-harm/intent': boolean;
+  'self-harm/instructions': boolean;
+  'harassment/threatening': boolean;
+  violence: boolean;
+}
+```
+
+Each category has an internal threshold that OpenAI has calibrated. When content exceeds this threshold, the corresponding category is flagged.
+
+## Pros and Cons of OpenAI's Moderation API
+
+### Pros
+
+1. **High Accuracy**: More sophisticated than simple keyword matching
+2. **Contextual Understanding**: Can understand nuance and context
+3. **Multiple Categories**: Detects various types of harmful content
+4. **Continual Improvement**: OpenAI regularly updates the model
+5. **Fast and Reliable**: Optimized for quick responses and high uptime
+
+### Cons
+
+1. **External Dependency**: Requires an API call to OpenAI
+2. **Cost**: Has associated usage costs (though much lower than chat completions)
+3. **Limited Customization**: Cannot be fine-tuned for specific needs
+4. **Potential Latency**: Adds an extra API call to your workflow
+5. **Black Box**: The exact detection mechanisms aren't fully transparent
+
+## Recommended Usage Patterns
+
+### 1. Early in the Pipeline
+
+Place the moderation check early in your preflight checks pipeline to quickly reject obviously harmful content:
+
+```typescript
+// In your preflight checks flow
+const checks = [
+  contentModerationCheck, // Run this early
+  blacklistedKeywordsCheck,
+  // Other checks...
+];
+```
+
+### 2. Handling Error Cases
+
+In production, consider "failing closed" for error cases:
+
+```typescript
+catch (error) {
+  console.error('Moderation API error:', error);
+
+  // Fail closed - reject on error
+  return {
+    passed: false,
+    code: 'moderation_error',
+    message: 'Unable to verify content safety',
+    details: { error: error instanceof Error ? error.message : 'Unknown error' },
+    severity: 'error'
+  };
+}
+```
+
+### 3. Caching Results
+
+For frequently seen inputs, consider caching moderation results:
+
+```typescript
+// Pseudocode for caching
+async function moderateWithCache(content) {
+  // Generate a hash of the content
+  const contentHash = createHash(content);
+
+  // Check cache
+  const cachedResult = await redis.get(`moderation:${contentHash}`);
+  if (cachedResult) {
+    return JSON.parse(cachedResult);
+  }
+
+  // Call API if not in cache
+  const result = await moderateContent(content);
+
+  // Cache result (expire after 24 hours)
+  await redis.set(`moderation:${contentHash}`, JSON.stringify(result), 'EX', 86400);
+
+  return result;
+}
+```
+
+## Conclusion
+
+OpenAI's Moderation API provides a powerful tool for detecting harmful content that might otherwise slip through simpler filters. By implementing it as a preflight check, you can:
+
+1. Detect a wide range of harmful content categories
+2. Get confidence scores for each category
+3. Make informed decisions about content acceptance
+4. Protect your AI application and users
+
+While no moderation system is perfect, combining OpenAI's API with other approaches like keyword blacklists creates a robust multi-layered defense against harmful content.
+
+Next in our series, we'll explore AI detection checks that can identify and filter AI-generated content that might be used for spam or other unwanted purposes.

@@ -1,0 +1,384 @@
+---
+title: 'Protecting AI Applications with IP-Based Rate Limiting'
+date: '2025-01-29'
+description: 'Learn how to implement enhanced rate limiting with IP protection for AI applications. This guide covers using Upstash Redis for distributed rate limiting, warning tracking, and protecting against abuse.'
+tags: ['rate-limiting', 'upstash', 'redis', 'api-security', 'typescript', 'ddos-protection']
+image: '/blog/bouncer.png'
+author:
+  name: 'Michael Hurhangee'
+  avatar: '/bilbo.jpg'
+  link: '/aboutme'
+---
+
+# Protecting AI Applications with IP-Based Rate Limiting
+
+In our [previous article](/blog/securing-ai-preflight-checks-part4-blacklist), we explored how blacklisted keyword detection helps prevent jailbreak attempts. Now, let's examine another critical defense mechanism: enhanced rate limiting with IP protection.
+
+Rate limiting is essential for AI applications to:
+
+- Prevent abuse and denial-of-service attacks
+- Control API costs
+- Ensure fair resource allocation
+- Limit the impact of automated attacks
+
+Let's explore how to implement an effective, IP-based rate limiting system using Upstash Redis.
+
+## Understanding Enhanced Rate Limiting
+
+Traditional rate limiting counts requests per user or API key. Enhanced rate limiting goes further by:
+
+1. Tracking requests by IP address
+2. Maintaining a warning system for problematic content
+3. Creating timeout periods for repeat offenders
+4. Building an adaptive deny list for persistent abusers
+
+Our implementation combines these features to create a robust defense against various forms of abuse.
+
+## Implementing IP-Based Rate Limiting
+
+Here's how we implement enhanced rate limiting using Upstash Redis:
+
+```typescript
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+import { PreflightCheck } from '../types';
+
+// Initialize Redis and Ratelimit
+const redis = Redis.fromEnv();
+
+// Create a separate instance for tracking warnings
+const warningTracker = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, '1 h'), // 5 warnings per hour
+  analytics: true,
+  prefix: 'ratelimit:warning:',
+});
+
+// Enhanced rate limiter with IP protection
+const ipRateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(50, '1 h'), // 50 requests per hour per IP
+  analytics: true,
+  prefix: 'ratelimit:ip:',
+  enableProtection: true, // Enable the built-in IP deny list
+});
+```
+
+This code initializes two separate rate limiters:
+
+1. A **warning tracker** that counts problematic content submissions
+2. An **IP rate limiter** that restricts the total number of requests per IP address
+
+We use Upstash's Redis client which is optimized for serverless and edge environments, making it ideal for modern web applications.
+
+## The Core Check Function
+
+Here's the core implementation of our enhanced rate limit check:
+
+```typescript
+export const enhancedRateLimitCheck: PreflightCheck = {
+  name: 'enhanced_rate_limit',
+  description: 'Enhanced rate limiting with IP protection and warning tracking',
+  run: async ({ lastMessage, ip = 'unknown', userAgent = 'unknown' }) => {
+    try {
+      // Skip check if there's no content to process
+      if (!lastMessage || lastMessage.trim().length === 0) {
+        return {
+          passed: true,
+          code: 'enhanced_rate_limit_skipped',
+          message: 'No content to check',
+          severity: 'info',
+        };
+      }
+
+      // First check if this IP is already in timeout from too many warnings
+      const warningStatus = await warningTracker.limit(`${ip}`);
+
+      // If there are no more warnings allowed, put them in timeout
+      if (!warningStatus.success) {
+        console.warn(`IP ${ip} has exceeded warning limit and is in timeout`);
+
+        const resetDate = new Date(warningStatus.reset);
+        const timeRemaining = Math.ceil((resetDate.getTime() - Date.now()) / 1000 / 60);
+
+        return {
+          passed: false,
+          code: 'warning_timeout',
+          message: 'Too many content warnings, please try again later',
+          details: {
+            resetInMinutes: timeRemaining,
+            resetAt: resetDate.toISOString(),
+          },
+          severity: 'error',
+        };
+      }
+
+      // Next, check the IP rate limit
+      const ipStatus = await ipRateLimiter.limit(`${ip}`, {
+        ip,
+        userAgent,
+      });
+
+      // Wait for any pending tasks to complete
+      await ipStatus.pending;
+
+      if (!ipStatus.success) {
+        console.warn(`IP rate limit exceeded for ${ip}`);
+
+        // Check if the request was denied because it's in a deny list
+        if (ipStatus.reason === 'denyList') {
+          return {
+            passed: false,
+            code: 'ip_denied',
+            message: 'Access denied',
+            severity: 'error',
+          };
+        }
+
+        const resetDate = new Date(ipStatus.reset);
+        const timeRemaining = Math.ceil((resetDate.getTime() - Date.now()) / 1000 / 60);
+
+        return {
+          passed: false,
+          code: 'ip_rate_limited',
+          message: 'Rate limit exceeded',
+          details: {
+            resetInMinutes: timeRemaining,
+            resetAt: resetDate.toISOString(),
+            remaining: 0,
+            limit: ipStatus.limit,
+          },
+          severity: 'error',
+        };
+      }
+
+      return {
+        passed: true,
+        code: 'enhanced_rate_limit_passed',
+        message: 'Rate limit check passed',
+        details: {
+          remaining: ipStatus.remaining,
+          limit: ipStatus.limit,
+        },
+        severity: 'info',
+      };
+    } catch (error) {
+      console.error('Enhanced rate limit error:', error);
+
+      // In case of error, we should still allow the content through
+      return {
+        passed: true,
+        code: 'enhanced_rate_limit_error',
+        message: 'Error in rate limit check, proceeding with caution',
+        details: { error: error instanceof Error ? error.message : 'Unknown error' },
+        severity: 'warning',
+      };
+    }
+  },
+};
+```
+
+This implementation:
+
+1. First checks if the IP has exceeded its warning limit
+2. Then checks if the IP has exceeded its request limit
+3. Provides detailed information about when limits will reset
+4. Handles special cases like deny-listed IPs
+5. Includes robust error handling
+
+## Tracking Warnings for Problematic Content
+
+A unique feature of our system is tracking warnings for users who repeatedly submit problematic content:
+
+```typescript
+// Function to increment warning count for an IP
+export async function incrementWarningCount(ip: string): Promise<void> {
+  try {
+    // Only increment if IP is provided
+    if (!ip || ip === 'unknown') return;
+
+    const warningStatus = await warningTracker.limit(ip);
+    console.log(
+      `Warning count for ${ip}: ${warningStatus.limit - warningStatus.remaining}/${warningStatus.limit}`
+    );
+
+    // Wait for any pending tasks to complete
+    await warningStatus.pending;
+  } catch (error) {
+    console.error('Error incrementing warning count:', error);
+  }
+}
+```
+
+This function is called when other preflight checks (like content moderation or blacklisted keywords) detect problematic content:
+
+```typescript
+if (
+  ['blacklisted_keywords', 'moderation_flagged', 'ethical_concerns', 'extremely_negative'].includes(
+    result.code
+  ) &&
+  ip &&
+  ip !== 'unknown'
+) {
+  try {
+    // Import here to avoid circular dependencies
+    const { incrementWarningCount } = await import('./checks/enhanced-rate-limit-check');
+    await incrementWarningCount(ip);
+  } catch (error) {
+    console.error('Failed to increment warning count:', error);
+  }
+}
+```
+
+This creates a progressive restriction system where users who repeatedly attempt to submit problematic content face increasingly strict rate limits.
+
+## Testing Rate Limiting
+
+To test this rate limiting system, we can consider these scenarios:
+
+### Scenario 1: Normal Usage
+
+A user makes 10 requests in an hour:
+
+- IP rate limit: 10/50 consumed
+- Warning count: 0/5
+- Result: All requests pass ✅
+
+### Scenario 2: High Volume
+
+A user makes 60 requests in an hour:
+
+- IP rate limit: 50/50 consumed, then exceeded
+- Result: Error with code `ip_rate_limited` after the 50th request ❌
+- The user must wait until the rate limit window resets
+
+### Scenario 3: Problematic Content
+
+A user makes 5 requests, each flagged for problematic content:
+
+- IP rate limit: 5/50 consumed
+- Warning count: 5/5 consumed
+- Result: Error with code `warning_timeout` after the 5th warning ❌
+- The user must wait until the warning count window resets
+
+### Scenario 4: Denied IP
+
+A user who has been added to the deny list attempts to make a request:
+
+- Result: Error with code `ip_denied` immediately ❌
+- The IP is permanently blocked until manually removed
+
+## Pros and Cons of Enhanced Rate Limiting
+
+### Pros
+
+1. **Distributed State**: Works across multiple servers or serverless functions
+2. **Persistent Storage**: Survives application restarts
+3. **Progressive Penalties**: Escalating restrictions for problematic users
+4. **Multiple Dimensions**: Limits both request volume and problematic content
+5. **Detailed Feedback**: Clear information about limits and reset times
+
+### Cons
+
+1. **External Dependency**: Requires Upstash Redis or another Redis provider
+2. **Cost Considerations**: Redis operations have associated costs
+3. **IP Reliability**: IP addresses can be shared (NAT) or spoofed
+4. **Implementation Complexity**: More complex than simple memory-based limiters
+5. **Potential Latency**: Redis operations add a small amount of latency
+
+## Potential Improvements
+
+### 1. User + IP Combined Limiting
+
+For authenticated users, combine user ID and IP for more precise limiting:
+
+```typescript
+const combinedKey = userId ? `${userId}:${ip}` : ip;
+const combinedStatus = await ipRateLimiter.limit(combinedKey);
+```
+
+### 2. Dynamic Rate Limits
+
+Adjust limits based on user behavior or subscription level:
+
+```typescript
+// Pseudocode for dynamic limits
+async function getDynamicLimit(userId) {
+  const user = await getUserData(userId);
+
+  if (user.subscription === 'premium') {
+    return 200; // Higher limit for premium users
+  } else if (user.trustScore > 90) {
+    return 100; // Higher limit for trusted users
+  } else {
+    return 50; // Default limit
+  }
+}
+```
+
+### 3. Geographic Rate Limiting
+
+Apply different limits based on geographic region:
+
+```typescript
+// Pseudocode for geo-based limiting
+async function getGeoLimit(ip) {
+  const geo = await geolocate(ip);
+
+  // Apply region-specific limits
+  if (geo.region === 'high_risk_region') {
+    return 20; // Stricter limit
+  } else {
+    return 50; // Standard limit
+  }
+}
+```
+
+### 4. Token Bucket Algorithm
+
+Consider implementing a token bucket algorithm for burst handling:
+
+```typescript
+// Pseudocode for token bucket
+const tokenBucket = new Ratelimit({
+  redis,
+  limiter: Ratelimit.tokenBucket(50, '50 per hour', 10), // 50 tokens refilled per hour, max 10 burst
+});
+```
+
+## Alternative Approaches
+
+While Upstash Redis provides an excellent solution, consider these alternatives:
+
+1. **In-Memory Rate Limiting**: For simple applications, an in-memory solution might be sufficient (though it won't work across multiple instances)
+
+2. **Database-Based Limiting**: Use your existing database for rate limiting (though performance may be a concern)
+
+3. **API Gateway Limiting**: Many API gateways (like AWS API Gateway or Nginx) provide built-in rate limiting
+
+4. **Specialized Services**: Services like Cloudflare or Fastly offer advanced rate limiting as part of their edge networks
+
+## Best Practices for Implementation
+
+1. **Fail Open for Errors**: Rate limiting should not break your application if Redis is unavailable
+
+2. **Clear User Feedback**: Provide helpful error messages with reset times
+
+3. **Monitoring and Alerts**: Set up alerts for unusual rate limit patterns that might indicate attacks
+
+4. **Regular Auditing**: Review and adjust limits based on actual usage patterns
+
+5. **Graduated Response**: Implement a system of escalating restrictions rather than immediate hard blocking
+
+## Conclusion
+
+Enhanced rate limiting with IP protection and warning tracking provides a robust defense against various forms of abuse. By implementing this system, you can:
+
+- Protect your AI application from excessive usage
+- Limit the impact of problematic users
+- Control costs for external API calls
+- Ensure fair resource allocation for all users
+
+In our next article, we'll explore another critical preflight check: user-based rate limiting that tracks and restricts usage on a per-user basis.
+
+Remember that rate limiting is just one part of a comprehensive security strategy, but it's an essential component for any production AI application.
