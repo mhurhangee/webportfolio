@@ -1,5 +1,3 @@
-// File: /home/mjh/front/apps/web/app/(ai)/ai/[slug]/page.tsx
-
 import React from 'react';
 import { getToolBySlug } from '@/app/(ai)/lib/playground-config';
 import { notFound } from 'next/navigation';

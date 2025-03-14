@@ -1,5 +1,3 @@
-// File: /home/mjh/front/apps/web/app/(ai)/ai-apps/prompt-tutor/route.ts
-
 import { NextRequest } from 'next/server';
 import { generateObject } from 'ai';
 import { APP_CONFIG } from './config';

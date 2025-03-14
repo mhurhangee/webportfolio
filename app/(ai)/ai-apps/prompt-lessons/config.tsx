@@ -1,5 +1,3 @@
-// File: /home/mjh/front/apps/web/app/(ai)/ai-apps/prompt-lessons/config.tsx
-
 import { AITool } from '@/app/(ai)/lib/types';
 import { BookOpen } from 'lucide-react';
 import { groq } from '@ai-sdk/groq';

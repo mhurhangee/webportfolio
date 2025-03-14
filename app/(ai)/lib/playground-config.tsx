@@ -1,5 +1,3 @@
-// File: /home/mjh/front/apps/web/app/(ai)/lib/playground-config.tsx
-
 import { AITool, AICategory } from '@/app/(ai)/lib/types';
 import { APP_CONFIG as PromptRewriterConfig } from '../ai-apps/basic-prompt-rewriter/config';
 import { APP_CONFIG as PromptTutorConfig } from '../ai-apps/prompt-tutor/config';

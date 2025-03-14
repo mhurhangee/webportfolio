@@ -1,4 +1,3 @@
-// File: /home/mjh/front/apps/web/app/(ai)/ai-apps/prompt-lessons/app.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';

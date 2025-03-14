@@ -1,5 +1,3 @@
-// File: /home/mjh/front/apps/web/components/ai/sidebar.tsx
-
 'use client';
 
 import Link from 'next/link';

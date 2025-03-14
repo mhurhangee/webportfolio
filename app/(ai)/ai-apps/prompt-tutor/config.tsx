@@ -1,5 +1,3 @@
-// File: /home/mjh/front/apps/web/app/(ai)/ai-apps/prompt-tutor/config.tsx
-
 import { AITool } from '@/app/(ai)/lib/types';
 import { BookOpen } from 'lucide-react';
 import { DEFAULT_CONFIG } from '@/app/(ai)/lib/defaults';

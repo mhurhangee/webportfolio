@@ -1,5 +1,3 @@
-// File: /home/mjh/front/apps/web/app/(ai)/ai/page.tsx
-
 'use client';
 
 import Link from 'next/link';

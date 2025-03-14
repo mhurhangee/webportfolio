@@ -1,5 +1,3 @@
-// File: /home/mjh/front/apps/web/app/(ai)/ai-apps/prompt-tutor/app.tsx
-
 'use client';
 
 import { useState } from 'react';
