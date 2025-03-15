@@ -16,7 +16,9 @@ const fontMono = Geist_Mono({
 });
 
 const isDevelopment = process.env.NODE_ENV === 'development';
-const title = isDevelopment ? "(dev) aiconsult.uk: by michael hurhangee" : "aiconsult.uk: by michael hurhangee";
+const title = isDevelopment
+  ? '(dev) aiconsult.uk: by michael hurhangee'
+  : 'aiconsult.uk: by michael hurhangee';
 
 export const metadata: Metadata = {
   title: title,

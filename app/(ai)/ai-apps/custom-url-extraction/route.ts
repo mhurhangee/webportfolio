@@ -1,4 +1,4 @@
-import { generateObject } from "ai";
+import { generateObject } from 'ai';
 import { NextRequest } from 'next/server';
 import { APP_CONFIG } from './config';
 import { getUserInfo } from '../../lib/user-identification';
@@ -7,13 +7,11 @@ import { createApiHandler, createApiError } from '@/app/(ai)/lib/error-handling/
 import { logger } from '@/app/(ai)/lib/error-handling/logger';
 
 // Diffbot API endpoint
-const DIFFBOT_API_URL = "https://api.diffbot.com/v3/analyze";
+const DIFFBOT_API_URL = 'https://api.diffbot.com/v3/analyze';
 
 export const runtime = 'edge';
 
 export const maxDuration = 60;
-
-
 
 async function handler(req: NextRequest) {
   try {
@@ -41,7 +39,7 @@ async function handler(req: NextRequest) {
       url,
       promptLength: prompt?.length,
       promptPreview: prompt
-        ? url + ": " + prompt.substring(0, 50) + (prompt.length > 50 ? '...' : '')
+        ? url + ': ' + prompt.substring(0, 50) + (prompt.length > 50 ? '...' : '')
         : 'empty',
     });
 
@@ -108,53 +106,62 @@ async function handler(req: NextRequest) {
     });
 
     const diffbotUrl = new URL(DIFFBOT_API_URL);
-    diffbotUrl.searchParams.append("url", url);
-    diffbotUrl.searchParams.append("token", process.env.DIFFBOT_API_KEY || "");
+    diffbotUrl.searchParams.append('url', url);
+    diffbotUrl.searchParams.append('token', process.env.DIFFBOT_API_KEY || '');
 
     const diffbotResponse = await fetch(diffbotUrl.toString(), {
-      method: "GET",
-      headers: { accept: "application/json" },
+      method: 'GET',
+      headers: { accept: 'application/json' },
     });
 
     if (!diffbotResponse.ok) {
       const status = diffbotResponse.status;
       const statusText = diffbotResponse.statusText;
-      
+
       logger.error('Failed to fetch content from URL', {
         ...requestContext,
         url,
         status,
         statusText,
       });
-      
-      throw createApiError('bad_request', `Failed to fetch content from URL: ${statusText || status}`, 'error', {
-        url,
-        status,
-      });
+
+      throw createApiError(
+        'bad_request',
+        `Failed to fetch content from URL: ${statusText || status}`,
+        'error',
+        {
+          url,
+          status,
+        }
+      );
     }
 
     const diffbotData = await diffbotResponse.json();
 
     // Extract the main content from Diffbot response
-    let content = "";
-    let title = "";
+    let content = '';
+    let title = '';
 
     if (diffbotData.objects && diffbotData.objects.length > 0) {
       const mainObject = diffbotData.objects[0];
-      title = mainObject.title || "";
-      content = mainObject.text || "";
+      title = mainObject.title || '';
+      content = mainObject.text || '';
     }
-
 
     if (!content) {
       logger.warn('No content extracted from URL', {
         ...requestContext,
         url,
       });
-      
-      throw createApiError('bad_request', 'Could not extract content from the provided URL', 'error', {
-        url,
-      });
+
+      throw createApiError(
+        'bad_request',
+        'Could not extract content from the provided URL',
+        'error',
+        {
+          url,
+        }
+      );
     }
 
     // Log that we're calling the AI service
@@ -170,7 +177,7 @@ async function handler(req: NextRequest) {
     // trim the content to 2000 characters
     content = content.substring(0, 2000);
 
-    console.log("Content:", content);
+    console.log('Content:', content);
 
     // Use AI SDK to process the content with no-schema approach
     const result = await generateObject({
@@ -182,7 +189,7 @@ async function handler(req: NextRequest) {
         ${content}
       `,
       prompt,
-      output: "no-schema", // Use no-schema to allow dynamic object structure based on prompt
+      output: 'no-schema', // Use no-schema to allow dynamic object structure based on prompt
       temperature: APP_CONFIG.temperature,
       maxTokens: APP_CONFIG.maxTokens,
     });

@@ -14,7 +14,9 @@ const InlinePromptRewriterTool = dynamic(
   () => import('@/app/(ai)/ai-apps/inline-prompt-rewriter/app')
 );
 const FridgeFriendTool = dynamic(() => import('@/app/(ai)/ai-apps/fridge-friend/app'));
-const CustomUrlExtractionTool = dynamic(() => import('@/app/(ai)/ai-apps/custom-url-extraction/app'));
+const CustomUrlExtractionTool = dynamic(
+  () => import('@/app/(ai)/ai-apps/custom-url-extraction/app')
+);
 
 export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

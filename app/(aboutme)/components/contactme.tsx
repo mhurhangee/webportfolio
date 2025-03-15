@@ -84,7 +84,11 @@ export function ContactMe() {
             </Button>
           </Link>
 
-          <Link href="https://www.linkedin.com/in/michael-hurhangee-ab83b8134/" target="_blank" rel="noopener noreferrer">
+          <Link
+            href="https://www.linkedin.com/in/michael-hurhangee-ab83b8134/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Button
               variant="ghost"
               className="flex items-center space-x-2 hover:bg-green-500/10 text-lg"

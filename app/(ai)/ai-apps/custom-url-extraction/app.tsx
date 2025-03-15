@@ -58,7 +58,7 @@ export default function WebExtractorTool() {
       setIsLoading(true);
       setIsAborted(false);
       setExtractedData(null);
-      
+
       setActiveTab('result');
 
       // Create a new AbortController for this request
@@ -81,7 +81,7 @@ export default function WebExtractorTool() {
 
       const data = await response.json();
       setExtractedData(data);
-      toastSuccess("Content extracted successfully!");
+      toastSuccess('Content extracted successfully!');
       setIsLoading(false);
     } catch (err: any) {
       // Don't set error for aborted requests
@@ -148,7 +148,10 @@ export default function WebExtractorTool() {
               <Pickaxe className="mr-2 h-5 w-5 text-primary" />
               Extract Web Content
             </CardTitle>
-            <CardDescription>Extract structured data from public web pages. Extraction works best on articles, blogs, documentation and the like.</CardDescription>
+            <CardDescription>
+              Extract structured data from public web pages. Extraction works best on articles,
+              blogs, documentation and the like.
+            </CardDescription>
           </CardHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -167,11 +170,11 @@ export default function WebExtractorTool() {
                   <form onSubmit={handleSubmit}>
                     <div className="space-y-4">
                       {errorConfig && <PreflightError config={errorConfig} />}
-                      
+
                       <div className="space-y-2">
                         <h3 className="text-sm font-medium">Web Page URL</h3>
                         <Input
-                          placeholder="e.g. https://www.bbc.co.uk/news/articles/cn7rx05xg2go or https://en.wikipedia.org/wiki/Cheese"
+                          placeholder="e.g. https://en.wikipedia.org/wiki/Cheese"
                           value={url}
                           onChange={(e) => setUrl(e.target.value)}
                           disabled={isLoading}
@@ -182,10 +185,12 @@ export default function WebExtractorTool() {
                       </div>
 
                       <div className="space-y-2">
-                        <h3 className="text-sm font-medium">Define the schema you want to extract</h3>
+                        <h3 className="text-sm font-medium">
+                          Define the schema you want to extract
+                        </h3>
                         <Textarea
                           withCounter
-                          placeholder="e.g. Extract the main topics and headlines from this article or Types and varieties of cheese, their characteristics, and their origin..."
+                          placeholder="e.g. Extract types and varieties of cheese, their characteristics, and their origin..."
                           className="min-h-[100px] resize-none pr-16"
                           value={prompt}
                           onChange={(e) => {
@@ -222,7 +227,6 @@ export default function WebExtractorTool() {
 
             <TabsContent value="result" className="m-0 space-y-0">
               <CardContent className="p-6">
-
                 {isAborted && (
                   <div className="flex flex-col items-center justify-center space-y-4 py-12">
                     <p className="text-sm text-muted-foreground">Extraction stopped by user.</p>
@@ -250,8 +254,8 @@ export default function WebExtractorTool() {
 
                 {isLoading ? (
                   <div className="space-y-4">
-                    <div className="rounded-md bg-muted p-4">
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <div className="rounded-md bg-muted p-4 flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 pb-2 animate-spin" />
                       <span className="text-sm animate-pulse">Extracting content...</span>
                     </div>
                     {isLoading && (
@@ -263,10 +267,13 @@ export default function WebExtractorTool() {
                       </div>
                     )}
                   </div>
-                ) : !error && !isAborted && (
-                  <div className="text-sm text-muted-foreground flex justify-center items-center py-12">
-                    Your structured output will appear here.
-                  </div>
+                ) : (
+                  !error &&
+                  !isAborted && (
+                    <div className="text-sm text-muted-foreground flex justify-center items-center py-12">
+                      Your structured output will appear here.
+                    </div>
+                  )
                 )}
               </CardContent>
             </TabsContent>
