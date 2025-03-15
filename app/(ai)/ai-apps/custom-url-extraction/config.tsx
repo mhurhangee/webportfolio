@@ -17,7 +17,7 @@ export const APP_CONFIG: AITool = {
   apiRoute: '/api/ai/custom-url-extraction',
   category: 'text',
   color: 'from-emerald-500 to-teal-400',
-  isNew: true,
+  isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Send, RotateCcw, CheckCircle2, StopCircle, Pickaxe } from 'lucide-react';
+import { Send, RotateCcw, StopCircle, Pickaxe, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,7 +14,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { PreflightError } from '@/app/(ai)/components/preflight-error';
 import { getErrorDisplay } from '@/app/(ai)/lib/preflight-checks/error-handler';
@@ -149,7 +148,7 @@ export default function WebExtractorTool() {
               <Pickaxe className="mr-2 h-5 w-5 text-primary" />
               Extract Web Content
             </CardTitle>
-            <CardDescription>Extract structured data from any web page</CardDescription>
+            <CardDescription>Extract structured data from public web pages. Extraction works best on articles, blogs, documentation and the like.</CardDescription>
           </CardHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -172,7 +171,7 @@ export default function WebExtractorTool() {
                       <div className="space-y-2">
                         <h3 className="text-sm font-medium">Web Page URL</h3>
                         <Input
-                          placeholder="https://example.com"
+                          placeholder="e.g. https://www.bbc.co.uk/news/articles/cn7rx05xg2go or https://en.wikipedia.org/wiki/Cheese"
                           value={url}
                           onChange={(e) => setUrl(e.target.value)}
                           disabled={isLoading}
@@ -183,10 +182,10 @@ export default function WebExtractorTool() {
                       </div>
 
                       <div className="space-y-2">
-                        <h3 className="text-sm font-medium">Extraction Prompt</h3>
+                        <h3 className="text-sm font-medium">Define the schema you want to extract</h3>
                         <Textarea
                           withCounter
-                          placeholder="Extract the main topics and key points from this article..."
+                          placeholder="e.g. Extract the main topics and headlines from this article or Types and varieties of cheese, their characteristics, and their origin..."
                           className="min-h-[100px] resize-none pr-16"
                           value={prompt}
                           onChange={(e) => {
@@ -241,11 +240,19 @@ export default function WebExtractorTool() {
                     </Button>
                   </div>
                 )}
-
-                {isLoading || extractedData ? (
+                {extractedData && (
                   <div className="space-y-4">
                     <div className="rounded-md bg-muted p-4">
                       <Code object={extractedData} />
+                    </div>
+                  </div>
+                )}
+
+                {isLoading ? (
+                  <div className="space-y-4">
+                    <div className="rounded-md bg-muted p-4">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <span className="text-sm animate-pulse">Extracting content...</span>
                     </div>
                     {isLoading && (
                       <div className="flex justify-center">
