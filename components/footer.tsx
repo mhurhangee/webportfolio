@@ -14,7 +14,7 @@ const socialLinks = [
     label: 'GitHub',
   },
   {
-    href: 'https://linkedin.com/in/mhurhangee',
+    href: 'https://www.linkedin.com/in/michael-hurhangee-ab83b8134/',
     icon: <Linkedin className="h-4 w-4" />,
     label: 'LinkedIn',
   },

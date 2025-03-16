@@ -155,7 +155,7 @@ export default function LessonContentView({ lesson, content, isLoading }: Lesson
                           <XCircle className="h-4 w-4 text-red-500 mr-2" />
                           Poor Example:
                         </p>
-                        <div className="bg-red-100 dark:bg-red-900/30 p-3 rounded-md">
+                        <div className="bg-red-100 dark:bg-red-900 p-3 rounded-md">
                           <p className="text-sm">{example.bad}</p>
                         </div>
                       </div>
@@ -164,7 +164,7 @@ export default function LessonContentView({ lesson, content, isLoading }: Lesson
                           <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
                           Good Example:
                         </p>
-                        <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-md">
+                        <div className="bg-green-100 dark:bg-green-900 p-3 rounded-md">
                           <p className="text-sm">{example.good}</p>
                         </div>
                       </div>

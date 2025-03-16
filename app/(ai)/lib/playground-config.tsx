@@ -6,6 +6,7 @@ import { APP_CONFIG as KeywordExtractorConfig } from '../ai-apps/keyword-extract
 import { APP_CONFIG as SummariserConfig } from '../ai-apps/summariser/config';
 import { APP_CONFIG as InlinePromptRewriterConfig } from '../ai-apps/inline-prompt-rewriter/config';
 import { APP_CONFIG as FridgeFriendConfig } from '../ai-apps/fridge-friend/config';
+import { APP_CONFIG as CustomUrlExtractionConfig } from '../ai-apps/custom-url-extraction/config';
 
 // Only define the prompt rewriter for now
 export const aiTools: AITool[] = [
@@ -16,6 +17,7 @@ export const aiTools: AITool[] = [
   SummariserConfig,
   InlinePromptRewriterConfig,
   FridgeFriendConfig,
+  CustomUrlExtractionConfig,
 ];
 
 // Organize applications by category

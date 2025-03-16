@@ -77,14 +77,18 @@ export function ContactMe() {
           <Link href="https://github.com/mhurhangee" target="_blank" rel="noopener noreferrer">
             <Button
               variant="ghost"
-              className="flex items-center space-x-2 hover:bg-green-500/10 text-lg"
+              className="flex items-center space-x-2 hover:bg-green-900 text-lg"
             >
               <Github className="h-6 w-6 text-green-400" />
               <span>GitHub</span>
             </Button>
           </Link>
 
-          <Link href="https://linkedin.com/in/mhurhangee" target="_blank" rel="noopener noreferrer">
+          <Link
+            href="https://www.linkedin.com/in/michael-hurhangee-ab83b8134/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Button
               variant="ghost"
               className="flex items-center space-x-2 hover:bg-green-500/10 text-lg"
