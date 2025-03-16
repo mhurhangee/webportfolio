@@ -1,7 +1,4 @@
 // next.config.mjs
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const { withLogtail } = require('@logtail/next');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -15,4 +12,4 @@ const nextConfig = {
   },
 };
 
-export default withLogtail(nextConfig);
+export default nextConfig;
