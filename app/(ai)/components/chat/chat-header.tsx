@@ -3,7 +3,6 @@
 import { Bot, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CardHeader, CardTitle } from '@/components/ui/card';
-import { FullscreenToggle } from './fullscreen-toggle';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
@@ -60,10 +59,9 @@ export function ChatHeader({
           className="h-7 sm:h-8 px-1.5 sm:px-2 text-xs sm:text-sm bg-background/80 hover:bg-background"
           onClick={onNewChat}
         >
-          <RefreshCw className="h-3 w-3 mr-1" />
-          <span className="hidden sm:inline">New Chat</span>
+          <RefreshCw className="h-3 w-3" />
+          <span className="ml-1hidden sm:inline"> New Chat</span>
         </Button>
-        <FullscreenToggle targetRef={fullscreenTargetRef} />
       </div>
     </CardHeader>
   );
