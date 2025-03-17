@@ -1,34 +1,114 @@
 "use client"
 
 import { useChat } from "@ai-sdk/react"
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Send, Bot, Loader2 } from "lucide-react"
-import { TypingIndicator } from "@/app/(ai)/components/typing-indicator"
-import { ChatMessage } from "@/app/(ai)/components/chat-message"
-import { motion } from "framer-motion"
-import { container, item } from "@/lib/animation"
+import { useState, useEffect } from "react"
+import { ChatContainer } from "../../components/chat/chat-container"
+import { ErrorMessage } from "../../components/chat/error-message"
 import { APP_CONFIG } from "./config"
+import { toast } from "sonner"
+import { useErrorHandler } from "@/app/(ai)/lib/error-handling/client-error-handler"
+import { nanoid } from "nanoid"
+import type { Message } from "ai"
 
 export default function ChatPage() {
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat({
-    api: "../ai-apps/basic-chat/api"
-  })
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const messageContainerRef = useRef<HTMLDivElement>(null)
+  const { error: errorHandler, handleError } = useErrorHandler('basic-chat')
+  const [lastErrorMessage, setLastErrorMessage] = useState<Message | null>(null)
   const [isMounted, setIsMounted] = useState(false)
+  const [errorState, setErrorState] = useState<{
+    visible: boolean;
+    code: string;
+    message: string;
+    details?: string;
+  } | null>(null)
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (messagesEndRef.current && messageContainerRef.current) {
-      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight
+  const { messages, input, handleInputChange, handleSubmit, status, setMessages, reload, error } = useChat(
+    {
+      api: APP_CONFIG.apiRoute,
+      onError: (error: any) => {
+        // Extract the error message
+        const errorMessage = error?.message || "Something went wrong. Please try again."
+        console.error("Chat API error:", error)
+        
+        // Extract error details if they exist
+        let errorCode = 'unknown_error'
+        let errorDetails = {}
+        let formattedErrorMessage = errorMessage
+        
+        try {
+          // Try to parse the JSON response from the server
+          if (error.response) {
+            const responseData = error.response.data || {}
+            if (responseData.error) {
+              errorCode = responseData.error.code || errorCode
+              errorDetails = responseData.error.details || {}
+              formattedErrorMessage = responseData.error.message || errorMessage
+            }
+          }
+        } catch (e) {
+          console.error("Error parsing error response:", e)
+        }
+        
+        // Set the error state for the error alert - with user-friendly formatting
+        const userFriendlyMessage = (() => {
+          // Create user-friendly messages based on error code
+          switch(errorCode) {
+            case 'rate_limit_exceeded':
+            case 'user_rate_limit_exceeded':
+            case 'global_rate_limit_exceeded':
+              return 'You have sent too many messages in a short period. Please wait a moment before trying again.';
+            case 'moderation_flagged':
+              return 'Your message contains content that doesn\'t comply with our usage policies.';
+            case 'blacklisted_keywords':
+              return 'Your message contains prohibited keywords or phrases.';
+            case 'validation_error':
+              return 'There was a problem with your message format.';
+            case 'input_too_long':
+              return 'Your message is too long. Please shorten it and try again.';
+            case 'ai_detection':
+              return 'Your message appears to be AI-generated content.';
+            case 'language_not_supported':
+              return 'The language you\'re using is not currently supported.';
+            case 'sanitization_error':
+              return 'Your message contains potentially unsafe content that has been blocked.';
+            default:
+              // For unknown errors, give a generic friendly message rather than showing technical details
+              return 'Something went wrong. Please try again or refresh the page.';
+          }
+        })();
+        
+        setErrorState({
+          visible: true,
+          code: errorCode,
+          message: userFriendlyMessage,
+          details: undefined // Don't show raw details to users
+        })
+        
+        // Create a system message to display the error - but in a cleaner, more user-friendly format
+        const systemErrorMessage: Message = {
+          id: nanoid(),
+          role: 'assistant',
+          content: `⚠️ **I'm unable to respond right now**\n\n${userFriendlyMessage}`
+        }
+        
+        // Update the last error message state
+        setLastErrorMessage(systemErrorMessage)
+        
+        // Handle the error with our error handler
+        handleError(error)
+      }
     }
-  }, [messages])
+  )
 
-  // Set mounted state
+  const handleNewChat = () => {
+    setMessages([])
+    setLastErrorMessage(null)
+    setErrorState(null)
+  }
+  
+  const dismissError = () => {
+    setErrorState(null)
+  }
+  
   useEffect(() => {
     setIsMounted(true)
   }, [])
@@ -37,92 +117,32 @@ export default function ChatPage() {
     return null
   }
 
-  // Get the last assistant message to determine if it's streaming
-  const lastAssistantMessageIndex =
-    messages.length > 0 ? [...messages].reverse().findIndex((m) => m.role === "assistant") : -1
-
-  const isLastAssistantMessageStreaming = status === "streaming" && lastAssistantMessageIndex !== -1
-
   return (
-    <motion.div variants={container} initial="hidden" animate="visible" className="space-y-8">
-      <motion.div variants={item} className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{APP_CONFIG.name}</h1>
-        <p className="text-muted-foreground">{APP_CONFIG.description}</p>
-      </motion.div>
-
-      <motion.div variants={item}>
-        <Card className="w-full max-w-2xl h-[600px] flex flex-col">
-          <CardHeader className="border-b p-4 flex-shrink-0">
-            <CardTitle className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-primary" />
-              AI Assistant
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent 
-            ref={messageContainerRef} 
-            className="flex-1 overflow-y-auto p-4 space-y-4"
-            style={{ height: 'calc(600px - 130px)' }}
-          >
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                <Bot className="h-12 w-12 mb-4 text-primary/50" />
-                <p className="text-lg font-medium">How can I help you today?</p>
-                <p className="text-sm">Ask me anything and I'll do my best to assist you.</p>
-              </div>
-            ) : (
-              <div className="space-y-4 pb-2">
-                {messages.map((message, index) => (
-                  <ChatMessage
-                    key={message.id}
-                    message={message}
-                    streaming={isLastAssistantMessageStreaming && index === messages.length - 1 - lastAssistantMessageIndex}
-                  />
-                ))}
-
-                {status === "submitted" && (
-                  <div className="flex items-start gap-3 animate-in fade-in-0 slide-in-from-bottom-3 duration-300">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-primary/10 text-primary">AI</AvatarFallback>
-                    </Avatar>
-                    <div className="bg-muted rounded-lg px-4 py-2 text-sm">
-                      <TypingIndicator className="text-muted-foreground" />
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
-          </CardContent>
-
-          <CardFooter className="border-t p-4 flex-shrink-0">
-            <form onSubmit={handleSubmit} className="flex w-full gap-2">
-              <Input
-                value={input}
-                onChange={handleInputChange}
-                placeholder="Type your message..."
-                className="flex-1"
-                disabled={status !== "ready"}
-                autoComplete="off"
-                autoFocus
-              />
-              <Button 
-                type="submit" 
-                size="icon" 
-                className="shrink-0"
-                disabled={status !== "ready" || input.trim() === ""}
-              >
-                {status === "submitted" || status === "streaming" ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                <span className="sr-only">Send message</span>
-              </Button>
-            </form>
-          </CardFooter>
-        </Card>
-      </motion.div>
-    </motion.div>
+      <div className="flex flex-col w-full max-w-2xl space-y-4">
+        {errorState?.visible && (
+          <div className="px-4">
+            <ErrorMessage
+              message={errorState.message}
+              code={errorState.code}
+              onDismiss={dismissError}
+              autoHide={false}
+              className="mb-2"
+            />
+          </div>
+        )}
+        <ChatContainer
+          messages={messages}
+          input={input}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
+          status={error ? "error" : status}
+          setMessages={setMessages}
+          reload={reload}
+          lastErrorMessage={lastErrorMessage}
+          handleNewChat={handleNewChat}
+          onDismissError={dismissError}
+          hasError={!!errorState?.visible}
+        />
+      </div>
   )
 }

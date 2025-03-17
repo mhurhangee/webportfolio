@@ -1,5 +1,4 @@
-import { groq } from "@ai-sdk/groq"
-import { streamText } from "ai"
+import { streamText, smoothStream } from "ai"
 import { NextRequest } from "next/server"
 import { APP_CONFIG } from "../config"
 import { getUserInfo } from "@/app/(ai)/lib/user-identification"
@@ -138,16 +137,57 @@ async function handler(req: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined,
     })
 
-    // Return a special error response that the client can handle
+    // Extract error details for a better client experience
+    let errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+    let errorCode = "internal_error";
+    let errorSeverity = "error";
+    let errorDetails = {};
+    
+    // Try to extract structured error information if available
+    if (error instanceof Error && (error as any).isApiError) {
+      try {
+        const parsedError = JSON.parse(error.message);
+        errorCode = parsedError.code || errorCode;
+        errorMessage = parsedError.message || errorMessage;
+        errorSeverity = parsedError.severity || errorSeverity;
+        errorDetails = parsedError.details || {};
+      } catch (e) {
+        // Parsing failed, use the original error message
+        logger.error("Failed to parse API error", {
+          error: e instanceof Error ? e.message : String(e),
+          originalError: errorMessage,
+        });
+      }
+    }
+    
+    // For preflight check failures, provide more user-friendly error messages
+    if (errorCode.includes("rate_limit")) {
+      errorDetails = "You've reached the rate limit. Please wait a moment before trying again.";
+    } else if (errorCode === "moderation_flagged") {
+      errorDetails = "Your message contains content that doesn't comply with our usage policies.";
+    } else if (errorCode === "blacklisted_keywords") {
+      errorDetails = "Your message contains prohibited keywords or phrases.";
+    } else if (errorCode === "validation_error") {
+      errorDetails = "There was a problem with your request format.";
+    }
+    
+    // Return a structured error response that the client can handle
     return new Response(
       JSON.stringify({
         error: {
-          message: error instanceof Error ? error.message : "An unexpected error occurred",
-          code: error instanceof Error && "code" in error ? (error as any).code : "internal_error",
+          message: errorMessage,
+          code: errorCode,
+          severity: errorSeverity,
+          details: errorDetails,
+          requestId: (error as any).requestId || "unknown",
         },
       }),
       {
-        status: 500,
+        // Set appropriate status code based on error type
+        status: errorCode === "rate_limit_exceeded" ? 429 : 
+                errorCode === "unauthorized" ? 401 :
+                errorCode === "not_found" ? 404 :
+                errorCode.includes("validation") || errorCode === "moderation_flagged" ? 400 : 500,
         headers: {
           "Content-Type": "application/json",
         },

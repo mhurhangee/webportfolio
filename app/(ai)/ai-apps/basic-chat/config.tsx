@@ -11,7 +11,7 @@ export const APP_CONFIG: AITool = {
   systemPrompt: `You are a helpful assistant that can answer questions and provide information on a wide range of topics.  You must keep responses concise and to the point.  Use markdown and emojis to format responses.
 `,
   model: DEFAULT_CONFIG.model,
-  apiRoute: './basic-chat/api',
+  apiRoute: '../ai-apps/basic-chat/api',
   category: 'chat',
   color: 'from-emerald-500 to-teal-400',
   isNew: false,
