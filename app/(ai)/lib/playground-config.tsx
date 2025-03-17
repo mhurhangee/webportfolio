@@ -7,6 +7,7 @@ import { APP_CONFIG as SummariserConfig } from '../ai-apps/summariser/config';
 import { APP_CONFIG as InlinePromptRewriterConfig } from '../ai-apps/inline-prompt-rewriter/config';
 import { APP_CONFIG as FridgeFriendConfig } from '../ai-apps/fridge-friend/config';
 import { APP_CONFIG as CustomUrlExtractionConfig } from '../ai-apps/custom-url-extraction/config';
+import { APP_CONFIG as BasicChatConfig } from '../ai-apps/basic-chat/config';
 
 // Only define the prompt rewriter for now
 export const aiTools: AITool[] = [
@@ -18,6 +19,7 @@ export const aiTools: AITool[] = [
   InlinePromptRewriterConfig,
   FridgeFriendConfig,
   CustomUrlExtractionConfig,
+  BasicChatConfig,
 ];
 
 // Organize applications by category
@@ -31,6 +33,11 @@ export const aiCategories: AICategory[] = [
     name: 'Text Analysis',
     description: 'Utilities to help you analyse text',
     apps: aiTools.filter((app) => app.category === 'text'),
+  },
+  {
+    name: 'Chat',
+    description: 'Chat with AI-powered tools',
+    apps: aiTools.filter((app) => app.category === 'chat'),
   },
   {
     name: 'Creative Tools',

@@ -17,6 +17,7 @@ const FridgeFriendTool = dynamic(() => import('@/app/(ai)/ai-apps/fridge-friend/
 const CustomUrlExtractionTool = dynamic(
   () => import('@/app/(ai)/ai-apps/custom-url-extraction/app')
 );
+const BasicChatTool = dynamic(() => import('@/app/(ai)/ai-apps/basic-chat/app'));
 
 export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -52,6 +53,9 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
     }
     if (tool.id === 'custom-url-extraction') {
       return <CustomUrlExtractionTool />;
+    }
+    if (tool.id === 'basic-chat') {
+      return <BasicChatTool />;
     }
     // Default fallback
     return <div>Tool type not supported yet</div>;
