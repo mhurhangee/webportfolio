@@ -48,7 +48,7 @@ export function ErrorMessage({
         }
         // Otherwise, stringify it in a readable way
         return Object.entries(parsed)
-          .filter(([key, value]) => value && String(value).trim() !== '')
+          .filter(([key, value]) => value !== undefined && value !== null && String(value).trim() !== '')
           .map(([key, value]) => `${key}: ${value}`)
           .join(', ');
       }
@@ -67,7 +67,8 @@ export function ErrorMessage({
     // If the message contains complex error details, simplify it
     if (formattedMessage.includes('{') && formattedMessage.includes('}')) {
       // Extract just the main error message before any JSON details
-      const mainMessage = formattedMessage.split('{')[0].trim();
+      const parts = formattedMessage.split('{');
+      const mainMessage = parts[0]?.trim().replace(/\n/g, ' ') || '';
       if (mainMessage) {
         return mainMessage;
       }
