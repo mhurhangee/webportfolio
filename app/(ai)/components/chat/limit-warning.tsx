@@ -1,12 +1,12 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { AlertTriangle, RefreshCw } from "lucide-react"
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface LimitWarningProps {
-  isLimitReached: boolean
-  isApproachingLimit: boolean
-  onNewChat: () => void
+  isLimitReached: boolean;
+  isApproachingLimit: boolean;
+  onNewChat: () => void;
 }
 
 export function LimitWarning({ isLimitReached, isApproachingLimit, onNewChat }: LimitWarningProps) {
@@ -17,7 +17,9 @@ export function LimitWarning({ isLimitReached, isApproachingLimit, onNewChat }: 
           <AlertTriangle className="h-5 w-5 text-destructive" />
         </div>
         <h3 className="font-medium text-destructive">Message limit reached</h3>
-        <p className="text-destructive/80 text-sm mt-1">You've reached the maximum number of messages for this demo.</p>
+        <p className="text-destructive/80 text-sm mt-1">
+          You&#39;ve reached the maximum number of messages for this demo.
+        </p>
         <Button
           onClick={onNewChat}
           variant="outline"
@@ -27,16 +29,16 @@ export function LimitWarning({ isLimitReached, isApproachingLimit, onNewChat }: 
           Start a new conversation
         </Button>
       </div>
-    )
+    );
   }
 
   if (isApproachingLimit) {
     return (
       <div className="bg-amber-50 border border-amber-200 rounded-md p-2 text-center text-sm text-amber-800">
-        You're approaching the message limit. Consider starting a new chat soon.
+        You&#39;re approaching the message limit. Consider starting a new chat soon.
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }

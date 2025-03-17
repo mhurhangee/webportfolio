@@ -1,37 +1,37 @@
-"use client"
+'use client';
 
-import type React from "react"
+import type React from 'react';
 
-import { Card, CardContent } from "@/components/ui/card"
-import { ChatHeader } from "./chat-header"
-import { EmptyState } from "./empty-state"
-import { MessageList } from "./message-list"
-import { LimitWarning } from "./limit-warning"
-import { MessageInput } from "./message-input"
-import { useRef, useEffect, useState } from "react"
-import type { Message } from "ai"
-import { ConfirmationDialog } from "./confirmation-dialog"
-import { nanoid } from "nanoid"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { ChevronDown } from "lucide-react"
+import { Card, CardContent } from '@/components/ui/card';
+import { ChatHeader } from './chat-header';
+import { EmptyState } from './empty-state';
+import { MessageList } from './message-list';
+import { LimitWarning } from './limit-warning';
+import { MessageInput } from './message-input';
+import { useRef, useEffect, useState } from 'react';
+import type { Message } from 'ai';
+import { ConfirmationDialog } from './confirmation-dialog';
+import { nanoid } from 'nanoid';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { ChevronDown } from 'lucide-react';
 
 // Define message limit constant
-const MESSAGE_LIMIT = 20
-const MAX_INPUT_LENGTH = 1000
+const MESSAGE_LIMIT = 20;
+const MAX_INPUT_LENGTH = 1000;
 
 interface ChatContainerProps {
-  messages: Message[]
-  input: string
-  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void
-  status: "submitted" | "streaming" | "ready" | "error"
-  setMessages: (messages: Message[]) => void
-  reload: () => Promise<string | undefined | null>
-  lastErrorMessage?: Message | null
-  handleNewChat: () => void
-  onDismissError?: () => void
-  hasError?: boolean
+  messages: Message[];
+  input: string;
+  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  status: 'submitted' | 'streaming' | 'ready' | 'error';
+  setMessages: (messages: Message[]) => void;
+  reload: () => Promise<string | undefined | null>;
+  lastErrorMessage?: Message | null;
+  handleNewChat: () => void;
+  onDismissError?: () => void;
+  hasError?: boolean;
 }
 
 export function ChatContainer({
@@ -47,89 +47,89 @@ export function ChatContainer({
   onDismissError,
   hasError = false,
 }: ChatContainerProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const chatContainerRef = useRef<HTMLDivElement>(null)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null)
-  const [editingMessageContent, setEditingMessageContent] = useState("")
-  const [isAtBottom, setIsAtBottom] = useState(true)
-  const [isFocused, setIsFocused] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [editingMessageIndex, setEditingMessageIndex] = useState<number | null>(null);
+  const [editingMessageContent, setEditingMessageContent] = useState('');
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [isFocused, setIsFocused] = useState(false);
   const [confirmationState, setConfirmationState] = useState<{
     open: boolean;
-    action: "delete" | "regenerate" | "edit" | null;
+    action: 'delete' | 'regenerate' | 'edit' | null;
     index: number | null;
   }>({
     open: false,
     action: null,
     index: null,
-  })
+  });
 
   // Calculate if limit is reached or approaching
-  const messageCount = messages.length
-  const isLimitReached = messageCount >= MESSAGE_LIMIT
-  const isApproachingLimit = messageCount >= MESSAGE_LIMIT * 0.7 && !isLimitReached
-  const remainingMessages = MESSAGE_LIMIT - messageCount
-
-
+  const messageCount = messages.length;
+  const isLimitReached = messageCount >= MESSAGE_LIMIT;
+  const isApproachingLimit = messageCount >= MESSAGE_LIMIT * 0.7 && !isLimitReached;
+  const remainingMessages = MESSAGE_LIMIT - messageCount;
 
   // Handle message deletion with confirmation
   const confirmDeleteMessage = (index: number) => {
     setConfirmationState({
       open: true,
-      action: "delete",
+      action: 'delete',
       index,
-    })
-  }
+    });
+  };
 
   const handleDeleteMessage = (index: number) => {
     // Delete the message and all subsequent messages
-    const newMessages = messages.slice(0, index)
-    setMessages(newMessages)
-  }
+    const newMessages = messages.slice(0, index);
+    setMessages(newMessages);
+  };
 
   // Handle regenerate response with confirmation
   const confirmRegenerateResponse = (index: number) => {
     setConfirmationState({
       open: true,
-      action: "regenerate",
+      action: 'regenerate',
       index,
-    })
-  }
+    });
+  };
 
   const handleRegenerateResponse = (index: number) => {
-    if (index % 2 === 1) { // If it's an AI message (odd index)
+    if (index % 2 === 1) {
+      // If it's an AI message (odd index)
       // Get the user message before this AI message
-      const userMessageIndex = index - 1
+      const userMessageIndex = index - 1;
       if (userMessageIndex >= 0) {
         // Keep messages up to and including the user message
-        const newMessages = messages.slice(0, userMessageIndex + 1)
-        setMessages(newMessages)
+        const newMessages = messages.slice(0, userMessageIndex + 1);
+        setMessages(newMessages);
         // Then reload to generate a new AI response
-        reload()
+        reload();
       }
     }
-  }
+  };
 
   // Handle edit message with confirmation
   const confirmEditMessage = (index: number) => {
-    if (index % 2 === 0) { // Only user messages can be edited
+    if (index % 2 === 0) {
+      // Only user messages can be edited
       setConfirmationState({
         open: true,
-        action: "edit",
+        action: 'edit',
         index,
-      })
+      });
     }
-  }
+  };
 
   const startEditingMessage = (index: number) => {
-    setEditingMessageIndex(index)
-    setEditingMessageContent(messages?.[index]?.content || "")
-  }
+    setEditingMessageIndex(index);
+    setEditingMessageContent(messages?.[index]?.content || '');
+  };
 
   const cancelEditingMessage = () => {
-    setEditingMessageIndex(null)
-    setEditingMessageContent("")
-  }
+    setEditingMessageIndex(null);
+    setEditingMessageContent('');
+  };
 
   const saveEditedMessage = () => {
     if (editingMessageIndex === null || !editingMessageContent.trim()) {
@@ -138,7 +138,7 @@ export function ChatContainer({
 
     // Ensure the index is valid
     if (editingMessageIndex < 0 || editingMessageIndex >= messages.length) {
-      console.error("Invalid message index for editing");
+      console.error('Invalid message index for editing');
       return;
     }
 
@@ -148,7 +148,7 @@ export function ChatContainer({
     // Create a new message with proper typing
     const newMessage: Message = {
       id: nanoid(), // Always generate a new ID to avoid type issues
-      role: "user", // User messages are the only ones that can be edited
+      role: 'user', // User messages are the only ones that can be edited
       content: editingMessageContent,
     };
 
@@ -160,34 +160,35 @@ export function ChatContainer({
 
     // Reset editing state
     setEditingMessageIndex(null);
-    setEditingMessageContent("");
+    setEditingMessageContent('');
 
     // Reload to generate a new AI response
     reload();
   };
 
   const handleConfirmationAction = () => {
-    const { action, index } = confirmationState
-    if (index === null) return
+    const { action, index } = confirmationState;
+    if (index === null) return;
 
     switch (action) {
-      case "delete":
-        handleDeleteMessage(index)
-        break
-      case "regenerate":
-        handleRegenerateResponse(index)
-        break
-      case "edit":
-        startEditingMessage(index)
-        break
+      case 'delete':
+        handleDeleteMessage(index);
+        break;
+      case 'regenerate':
+        handleRegenerateResponse(index);
+        break;
+      case 'edit':
+        startEditingMessage(index);
+        break;
     }
-  }
+  };
 
   // Get the last assistant message to determine if it's streaming
   const lastAssistantMessageIndex =
-    messages.length > 0 ? [...messages].reverse().findIndex((m) => m.role === "assistant") : -1
+    messages.length > 0 ? [...messages].reverse().findIndex((m) => m.role === 'assistant') : -1;
 
-  const isLastAssistantMessageStreaming = status === "streaming" && lastAssistantMessageIndex !== -1
+  const isLastAssistantMessageStreaming =
+    status === 'streaming' && lastAssistantMessageIndex !== -1;
 
   // Check if scroll is at bottom
   const handleScroll = () => {
@@ -216,8 +217,8 @@ export function ChatContainer({
   return (
     <Card
       className={cn(
-        "w-full max-w-2xl h-[80vh] flex flex-col relative overflow-hidden transition-all duration-200",
-        isFocused && "ring-2 ring-primary/50"
+        'w-full max-w-2xl h-[80vh] flex flex-col relative overflow-hidden transition-all duration-200',
+        isFocused && 'ring-2 ring-primary/50'
       )}
       ref={chatContainerRef}
       onFocus={() => setIsFocused(true)}
@@ -280,8 +281,6 @@ export function ChatContainer({
         )}
       </CardContent>
 
-
-
       <MessageInput
         input={input}
         handleInputChange={handleInputChange}
@@ -296,27 +295,27 @@ export function ChatContainer({
 
       <ConfirmationDialog
         open={confirmationState.open}
-        onOpenChange={(open) => setConfirmationState(prev => ({ ...prev, open }))}
+        onOpenChange={(open) => setConfirmationState((prev) => ({ ...prev, open }))}
         title={
-          confirmationState.action === "delete"
-            ? "Delete message"
-            : confirmationState.action === "regenerate"
-              ? "Regenerate response"
-              : "Edit message"
+          confirmationState.action === 'delete'
+            ? 'Delete message'
+            : confirmationState.action === 'regenerate'
+              ? 'Regenerate response'
+              : 'Edit message'
         }
         description={
-          "This action will remove all subsequent messages and cannot be undone. Are you sure you want to continue?"
+          'This action will remove all subsequent messages and cannot be undone. Are you sure you want to continue?'
         }
         confirmLabel={
-          confirmationState.action === "delete"
-            ? "Delete"
-            : confirmationState.action === "regenerate"
-              ? "Regenerate"
-              : "Edit"
+          confirmationState.action === 'delete'
+            ? 'Delete'
+            : confirmationState.action === 'regenerate'
+              ? 'Regenerate'
+              : 'Edit'
         }
-        variant={confirmationState.action === "delete" ? "destructive" : "default"}
+        variant={confirmationState.action === 'delete' ? 'destructive' : 'default'}
         onConfirm={handleConfirmationAction}
       />
     </Card>
-  )
+  );
 }
