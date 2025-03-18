@@ -48,7 +48,9 @@ export function ErrorMessage({
         }
         // Otherwise, stringify it in a readable way
         return Object.entries(parsed)
-          .filter(([key, value]) => value !== undefined && value !== null && String(value).trim() !== '')
+          .filter(
+            ([key, value]) => value !== undefined && value !== null && String(value).trim() !== ''
+          )
           .map(([key, value]) => `${key}: ${value}`)
           .join(', ');
       }

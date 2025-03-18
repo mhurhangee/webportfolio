@@ -8,7 +8,7 @@ import { APP_CONFIG as InlinePromptRewriterConfig } from '../ai-apps/inline-prom
 import { APP_CONFIG as FridgeFriendConfig } from '../ai-apps/fridge-friend/config';
 import { APP_CONFIG as CustomUrlExtractionConfig } from '../ai-apps/custom-url-extraction/config';
 import { APP_CONFIG as BasicChatConfig } from '../ai-apps/basic-chat/config';
-import { APP_CONFIG as InterviewConfig } from '../ai-apps/interview-questions/config'
+import { APP_CONFIG as InterviewConfig } from '../ai-apps/interview-questions/config';
 
 // Only define the prompt rewriter for now
 export const aiTools: AITool[] = [
@@ -21,7 +21,7 @@ export const aiTools: AITool[] = [
   FridgeFriendConfig,
   CustomUrlExtractionConfig,
   BasicChatConfig,
-  InterviewConfig
+  InterviewConfig,
 ];
 
 // Organize applications by category
