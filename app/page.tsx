@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { FlipWords } from '@/components/ui/flipwords';
 import { User2, Bot, BookText } from 'lucide-react';
 import { container, item } from '@/lib/animation';
+import { ColourfulText } from '@/components/colourful-text';
 
 export default function Home() {
   return (
@@ -22,10 +23,15 @@ export default function Home() {
               variants={item}
               className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter"
             >
-              Welcome to <span className="text-red-500">ai</span>
-              <span className="text-blue-500">con</span>
-              <span className="text-yellow-500">sult</span>
-              <span className="text-green-500">.uk</span>
+              <ColourfulText
+                segments={[
+                  { text: "Welcome to ", color: "text-white" },
+                  { text: "ai", color: "text-red-500" },
+                  { text: "con", color: "text-blue-500" },
+                  { text: "sult", color: "text-yellow-500" },
+                  { text: ".uk", color: "text-green-500" }
+                ]}
+              />
             </motion.h1>
 
             <motion.h2
