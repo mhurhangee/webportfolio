@@ -21,7 +21,7 @@ When analyzing user prompts:
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/prompt-tutor',
   category: 'prompt',
-  color: 'from-purple-500 to-indigo-400',
+  color: 'from-red-500 to-orange-400',
   isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

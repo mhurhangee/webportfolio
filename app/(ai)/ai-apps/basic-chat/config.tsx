@@ -13,7 +13,7 @@ export const APP_CONFIG: AITool = {
   model: DEFAULT_CONFIG.model,
   apiRoute: '../ai-apps/basic-chat/api',
   category: 'knowledge',
-  color: 'from-emerald-500 to-teal-400',
+  color: 'from-blue-500 to-cyan-400',
   isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

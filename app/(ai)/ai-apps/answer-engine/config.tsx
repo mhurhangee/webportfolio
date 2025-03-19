@@ -13,7 +13,7 @@ export const APP_CONFIG: AITool = {
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/answer-engine',
   category: 'knowledge',
-  color: 'from-green-400 to-emerald-600',
+  color: 'from-blue-500 to-cyan-400',
   isNew: true,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

@@ -20,7 +20,6 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       <div className="space-y-6 py-4">
         <div className="px-3 py-2">
           <div className="flex items-center px-2 mb-2">
-            <Sparkles className="h-5 w-5 mr-2 text-primary" />
             <h2 className="text-xl font-semibold tracking-tight">AI Playground</h2>
           </div>
           <div className="space-y-1">

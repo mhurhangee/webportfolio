@@ -16,7 +16,7 @@ Use the provided schema to structure your response as JSON.
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/find-similar',
   category: 'knowledge',
-  color: 'from-blue-400 to-indigo-600',
+  color: 'from-blue-500 to-cyan-400',
   isNew: true,
   temperature: DEFAULT_CONFIG.temperature,
 };

@@ -14,7 +14,7 @@ export const APP_CONFIG: AITool = {
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/interview-questions',
   category: 'creative',
-  color: 'from-blue-500 to-cyan-400',
+  color: 'from-green-500 to-emerald-400',
   isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

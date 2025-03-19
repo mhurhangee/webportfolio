@@ -27,7 +27,7 @@ YOU MUST ALWAYS RETURN PROPERLY STRUCTURED JSON according to the schema provided
   model: groq('llama-3.3-70b-versatile'),
   apiRoute: '/api/ai/fridge-friend',
   category: 'creative',
-  color: 'from-orange-500 to-amber-400',
+  color: 'from-green-500 to-emerald-400',
   isNew: false,
   temperature: 0.7,
   maxTokens: 20000,

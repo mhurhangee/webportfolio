@@ -24,7 +24,7 @@ Return only the rewritten prompt without explanation, commentary, or surrounding
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/inline-prompt-rewriter',
   category: 'prompt',
-  color: 'from-blue-500 to-cyan-400',
+  color: 'from-red-500 to-orange-400',
   isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

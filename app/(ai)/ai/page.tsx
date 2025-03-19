@@ -26,7 +26,7 @@ export default function AIPlayground() {
       <motion.div variants={item} className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">AI Playground</h1>
         <p className="text-muted-foreground">
-          Explore a collection of AI applications built with Vercel&apos;s AI SDK.
+          Explore a collection of demo generative AI applications built by me.
         </p>
       </motion.div>
 

@@ -20,7 +20,7 @@ export const APP_CONFIG: AITool = {
   model: groq('llama-3.3-70b-versatile'),
   apiRoute: '/api/ai/prompt-lessons',
   category: 'prompt',
-  color: 'from-blue-500 to-indigo-400',
+  color: 'from-red-500 to-orange-400',
   isNew: true,
   temperature: 0.2,
   maxTokens: 1500,

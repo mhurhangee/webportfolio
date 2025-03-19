@@ -17,7 +17,7 @@ Use the provided schema to structure your response as JSON.
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/summariser',
   category: 'text',
-  color: 'from-red-400 to-orange-600',
+  color: 'from-amber-500 to-yellow-400',
   isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

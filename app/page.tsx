@@ -46,7 +46,7 @@ export default function Home() {
                 className="w-full text-base sm:text-lg px-4 sm:px-8 py-5 sm:py-6 space-x-2"
               >
                 <User2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>About me</span>
+                <span>About Me</span>
               </Button>
             </Link>
 
@@ -73,7 +73,7 @@ export default function Home() {
             </Link>
           </motion.div>
 
-          <motion.div variants={item} className="text-sm text-muted-foreground pt-4 sm:pt-8">
+          <motion.div variants={item} className="text-sm text-muted-foreground pt-4 sm:pt-8 hidden md:block">
             <FlipWords
               words={[
                 'Building a better future for all with AI.',

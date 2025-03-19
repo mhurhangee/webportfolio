@@ -22,7 +22,7 @@ When fact-checking text:
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/fact-checker',
   category: 'knowledge',
-  color: 'from-blue-500 to-green-400',
+  color: 'from-blue-500 to-cyan-400',
   isNew: true,
   temperature: 0.2, // Lower temperature for more factual responses
   maxTokens: DEFAULT_CONFIG.maxTokens,
