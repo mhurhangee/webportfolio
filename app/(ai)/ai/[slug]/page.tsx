@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
 const BasicPromptRewriterTool = dynamic(
-  () => import('@/app/(ai)/ai-apps/basic-prompt-rewriter/app')
+  () => import('@/app/(ai)/ai-apps/prompt-rewriter/app')
 );
 const PromptTutorTool = dynamic(() => import('@/app/(ai)/ai-apps/prompt-tutor/app'));
 const PromptLessonsTool = dynamic(() => import('@/app/(ai)/ai-apps/prompt-lessons/app'));
@@ -37,7 +37,7 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
 
   // Render the appropriate tool UI based on the tool type
   const renderToolUI = () => {
-    if (tool.id === 'basic-prompt-rewriter') {
+    if (tool.id === 'prompt-rewriter') {
       return <BasicPromptRewriterTool />;
     }
     if (tool.id === 'prompt-tutor') {
@@ -80,7 +80,7 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
       return <AccessibilityHelperTool />;
     }
     // Default fallback
-    return <div>Tool type not supported yet</div>;
+    return notFound();
   };
 
   return <div className="container max-w-4xl py-10">{renderToolUI()}</div>;

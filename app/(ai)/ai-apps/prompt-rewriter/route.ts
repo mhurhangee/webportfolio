@@ -1,5 +1,3 @@
-// /apps/web/app/(ai)/ai-apps/basic-prompt-rewriter/route.ts
-
 import { streamText } from 'ai';
 import { runPreflightChecks } from '@/app/(ai)/lib/preflight-checks/preflight-checks';
 import { NextRequest } from 'next/server';
