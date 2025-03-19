@@ -84,8 +84,7 @@ async function handler(req: NextRequest) {
         temperature: APP_CONFIG.temperature,
         maxTokens: 1000, // Smaller token limit for summary
       });
-      console.log('Summary result:', JSON.stringify(summaryResult.object, null, 2));
-
+    
       // Step 2: Generate the detailed feedback
       logger.info('Generating detailed feedback', { ...requestContext });
       const feedbackResult = await generateObject({
@@ -96,7 +95,6 @@ async function handler(req: NextRequest) {
         temperature: APP_CONFIG.temperature,
         maxTokens: APP_CONFIG.maxTokens,
       });
-      console.log('Feedback result length:', feedbackResult.object.feedback.length);
 
       // Combine the results
       const combinedResult = {

@@ -58,7 +58,7 @@ const navItems = [
   {
     href: '/ai',
     icon: <Bot className="h-4 w-4" />,
-    label: 'AI Playground',
+    label: 'AI Demos',
   },
 ];
 

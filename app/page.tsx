@@ -57,7 +57,7 @@ export default function Home() {
                 className="w-full text-base sm:text-lg px-4 sm:px-8 py-5 sm:py-6 space-x-2"
               >
                 <Bot className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>AI Playground</span>
+                <span>AI Demos</span>
               </Button>
             </Link>
 

@@ -486,15 +486,14 @@ export default function AccessibilityHelperTool() {
                       <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
                         <div className="flex justify-center mb-4">
                           <div
-                            className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold ${
-                              analysisResponse.summary.overallScore >= 80
+                            className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold ${analysisResponse.summary.overallScore >= 80
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                                 : analysisResponse.summary.overallScore >= 60
                                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                                   : analysisResponse.summary.overallScore >= 40
                                     ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
                                     : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                            }`}
+                              }`}
                           >
                             {analysisResponse.summary.overallScore}
                           </div>
@@ -512,22 +511,10 @@ export default function AccessibilityHelperTool() {
                           />
                         </div>
                         <div className="mt-4 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-2">
-                          <p className="flex items-center">
-                            <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>
-                            80-100: Excellent
-                          </p>
-                          <p className="flex items-center">
-                            <span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
-                            60-79: Good
-                          </p>
-                          <p className="flex items-center">
-                            <span className="inline-block w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
-                            40-59: Needs Improvement
-                          </p>
-                          <p className="flex items-center">
-                            <span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span>
-                            0-39: Poor
-                          </p>
+                          <p className="flex items-center"><span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>80-100: Excellent</p>
+                          <p className="flex items-center"><span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span>60-79: Good</p>
+                          <p className="flex items-center"><span className="inline-block w-3 h-3 rounded-full bg-amber-500 mr-2"></span>40-59: Needs Improvement</p>
+                          <p className="flex items-center"><span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span>0-39: Poor</p>
                         </div>
                       </div>
                     </div>

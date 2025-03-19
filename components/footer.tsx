@@ -45,7 +45,7 @@ const footerLinks = [
   },
   {
     href: '/ai',
-    label: 'AI Playground',
+    label: 'AI Demos',
   },
 ];
 

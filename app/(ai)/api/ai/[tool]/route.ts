@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getToolBySlug } from '@/app/(ai)/lib/playground-config';
+import { getToolBySlug } from '@/app/(ai)/lib/demos-config';
 
 export const runtime = 'edge';
 export const maxDuration = 60;

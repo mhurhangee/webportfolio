@@ -1,5 +1,5 @@
 import React from 'react';
-import { getToolBySlug } from '@/app/(ai)/lib/playground-config';
+import { getToolBySlug } from '@/app/(ai)/lib/demos-config';
 import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
