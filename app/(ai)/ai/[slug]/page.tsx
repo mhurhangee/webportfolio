@@ -3,9 +3,7 @@ import { getToolBySlug } from '@/app/(ai)/lib/demos-config';
 import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
-const BasicPromptRewriterTool = dynamic(
-  () => import('@/app/(ai)/ai-apps/prompt-rewriter/app')
-);
+const BasicPromptRewriterTool = dynamic(() => import('@/app/(ai)/ai-apps/prompt-rewriter/app'));
 const PromptTutorTool = dynamic(() => import('@/app/(ai)/ai-apps/prompt-tutor/app'));
 const PromptLessonsTool = dynamic(() => import('@/app/(ai)/ai-apps/prompt-lessons/app'));
 const KeywordExtractorTool = dynamic(() => import('@/app/(ai)/ai-apps/keyword-extractor/app'));

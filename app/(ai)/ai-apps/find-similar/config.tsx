@@ -7,6 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Find Similar',
   href: '/ai/find-similar',
   description: 'Discover websites similar to a provided URL',
+  instructions: 'Enter a website URL to find similar sites based on content and purpose',
+  footer: 'Discover websites similar to your favorite sites',
   icon: <Link2 className="h-6 w-6" />,
   systemPrompt: `
 You are an expert at finding similar websites and providing useful information about them.

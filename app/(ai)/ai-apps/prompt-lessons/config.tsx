@@ -7,6 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Prompt Lessons',
   href: '/ai/prompt-lessons',
   description: 'Learn prompt engineering through interactive, hands-on lessons',
+  instructions: 'Browse and complete interactive lessons on prompt engineering',
+  footer: 'Master the art of effective AI prompting',
   icon: <BookOpen className="h-6 w-6" />,
   systemPrompt: `
     # Role

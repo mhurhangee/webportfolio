@@ -7,6 +7,9 @@ export const APP_CONFIG: AITool = {
   name: 'Custom URL Extraction',
   href: '/ai/custom-url-extraction',
   description: 'Define your own schema to extract from a URL',
+  instructions:
+    'Extract structured data from public web pages by providing a URL and describing what to extract',
+  footer: 'Extract structured data from any web page using AI',
   icon: <Pickaxe className="h-6 w-6" />,
   systemPrompt: `
         You are an expert at extracting structured data from web content.

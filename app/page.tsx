@@ -25,11 +25,11 @@ export default function Home() {
             >
               <ColourfulText
                 segments={[
-                  { text: "Welcome to ", color: "text-white" },
-                  { text: "ai", color: "text-red-500" },
-                  { text: "con", color: "text-blue-500" },
-                  { text: "sult", color: "text-yellow-500" },
-                  { text: ".uk", color: "text-green-500" }
+                  { text: 'Welcome to ', color: 'text-white' },
+                  { text: 'ai', color: 'text-red-500' },
+                  { text: 'con', color: 'text-blue-500' },
+                  { text: 'sult', color: 'text-yellow-500' },
+                  { text: '.uk', color: 'text-green-500' },
                 ]}
               />
             </motion.h1>

@@ -8,6 +8,7 @@ import { container, item } from '@/lib/animation';
 import { APP_CONFIG } from './config';
 import { useErrorHandler } from '@/app/(ai)/lib/error-handling/client-error-handler';
 import { toastSuccess } from '@/app/(ai)/lib/error-handling/toast-manager';
+import { cloneElement, ReactElement } from 'react';
 
 // Import components
 import IngredientInput from './components/ingredient-input';
@@ -176,21 +177,20 @@ export default function FridgeFriendTool() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="visible" className="space-y-8">
-      <motion.div variants={item} className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{APP_CONFIG.name}</h1>
-        <p className="text-muted-foreground">{APP_CONFIG.description}</p>
-      </motion.div>
-
       <motion.div variants={item}>
-        <Card className="overflow-hidden">
+        <Card className="h-full overflow-hidden">
+          <div className={`h-2 w-full bg-gradient-to-r ${APP_CONFIG.color}`} />
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <UtensilsCrossed className="mr-2 h-5 w-5 text-primary" />
-              Fridge Friend
+            <CardTitle>
+              <h1 className="flex items-center text-2xl md:text-3xl font-bold tracking-tight">
+                {APP_CONFIG.icon &&
+                  cloneElement(APP_CONFIG.icon as ReactElement, {
+                    className: 'h-7 w-7 mr-2',
+                  })}
+                <span>{APP_CONFIG.name}</span>
+              </h1>
             </CardTitle>
-            <CardDescription>
-              Create delicious recipes using only the ingredients you have on hand.
-            </CardDescription>
+            <CardDescription>{APP_CONFIG.instructions || APP_CONFIG.description}</CardDescription>
           </CardHeader>
 
           {activeView === 'ingredients' && (

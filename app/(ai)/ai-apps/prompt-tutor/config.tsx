@@ -7,6 +7,9 @@ export const APP_CONFIG: AITool = {
   name: 'Prompt Tutor',
   href: '/ai/prompt-tutor',
   description: 'Learn how to craft effective AI prompts',
+  instructions:
+    "Submit a prompt you've written and receive personalized feedback to improve your skills",
+  footer: 'Improve your prompt writing skills with expert feedback',
   icon: <BookOpen className="h-6 w-6" />,
   systemPrompt: `You are an expert prompt engineering tutor who helps users learn how to write more effective prompts for AI systems.
 

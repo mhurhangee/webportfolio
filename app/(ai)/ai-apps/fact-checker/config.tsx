@@ -7,6 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Fact Checker',
   href: '/ai/fact-checker',
   description: 'Verify the accuracy of factual claims in text',
+  instructions: 'Submit text to identify and verify factual claims using AI and web search',
+  footer: 'Verify facts and improve the accuracy of your content',
   icon: <Shield className="h-6 w-6" />,
   systemPrompt: `You are a fact-checking assistant that helps users verify the accuracy of claims in text.
 

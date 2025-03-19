@@ -7,8 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Prompt Rewriter',
   href: '/ai/prompt-rewriter',
   description: 'Improve your prompts for better AI interactions',
-  instructions: 'Enter your prompt and we\'ll rewrite it to be more effective with AI systems.',
-  footer: "Rewrites improve clarity, specificity, and structure.",
+  instructions: "Enter your prompt and we'll rewrite it to be more effective with AI systems.",
+  footer: 'Rewrites improve clarity, specificity, and structure.',
   icon: <PenLine className="h-6 w-6" />,
   systemPrompt: `You are an expert prompt engineer who helps users write better prompts for AI systems.
 Your task is to rewrite the user's prompt to make it more effective, clear, specific, and well-structured. T.

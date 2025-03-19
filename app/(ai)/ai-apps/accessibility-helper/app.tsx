@@ -364,22 +364,20 @@ export default function AccessibilityHelperTool() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="visible" className="space-y-8">
-      <motion.div variants={item} className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{APP_CONFIG.name}</h1>
-        <p className="text-muted-foreground">{APP_CONFIG.description}</p>
-      </motion.div>
-
       <motion.div variants={item}>
-        <Card className="overflow-hidden">
+        <Card className="h-full overflow-hidden">
+          <div className={`h-2 w-full bg-gradient-to-r ${APP_CONFIG.color}`} />
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Accessibility className="mr-2 h-5 w-5 text-primary" />
-              Analyze Text for Accessibility
+            <CardTitle>
+              <h1 className="flex items-center text-2xl md:text-3xl font-bold tracking-tight">
+                {APP_CONFIG.icon &&
+                  React.cloneElement(APP_CONFIG.icon as React.ReactElement, {
+                    className: 'h-7 w-7 mr-2',
+                  })}
+                <span>{APP_CONFIG.name}</span>
+              </h1>
             </CardTitle>
-            <CardDescription>
-              Submit text to analyze for bias, readability, clarity, and get suggestions for
-              improvement.
-            </CardDescription>
+            <CardDescription>{APP_CONFIG.instructions || APP_CONFIG.description}</CardDescription>
           </CardHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -486,14 +484,15 @@ export default function AccessibilityHelperTool() {
                       <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
                         <div className="flex justify-center mb-4">
                           <div
-                            className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold ${analysisResponse.summary.overallScore >= 80
+                            className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold ${
+                              analysisResponse.summary.overallScore >= 80
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                                 : analysisResponse.summary.overallScore >= 60
                                   ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
                                   : analysisResponse.summary.overallScore >= 40
                                     ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
                                     : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                              }`}
+                            }`}
                           >
                             {analysisResponse.summary.overallScore}
                           </div>
@@ -511,10 +510,22 @@ export default function AccessibilityHelperTool() {
                           />
                         </div>
                         <div className="mt-4 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-2">
-                          <p className="flex items-center"><span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>80-100: Excellent</p>
-                          <p className="flex items-center"><span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span>60-79: Good</p>
-                          <p className="flex items-center"><span className="inline-block w-3 h-3 rounded-full bg-amber-500 mr-2"></span>40-59: Needs Improvement</p>
-                          <p className="flex items-center"><span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span>0-39: Poor</p>
+                          <p className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>
+                            80-100: Excellent
+                          </p>
+                          <p className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
+                            60-79: Good
+                          </p>
+                          <p className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
+                            40-59: Needs Improvement
+                          </p>
+                          <p className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+                            0-39: Poor
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -581,13 +592,13 @@ export default function AccessibilityHelperTool() {
             </TabsContent>
           </Tabs>
 
-          <CardFooter className="flex justify-between border-t p-6">
+          <CardFooter className="flex justify-between">
             <Button variant="outline" size="sm" onClick={handleReset} disabled={isLoading}>
               <RotateCcw className="mr-2 h-4 w-4" />
               Start New Analysis
             </Button>
             <p className="text-xs text-muted-foreground">
-              Improve text accessibility with AI-powered analysis.
+              {APP_CONFIG.footer || 'Improve text accessibility with AI-powered analysis.'}
             </p>
           </CardFooter>
         </Card>

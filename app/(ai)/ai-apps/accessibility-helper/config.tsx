@@ -7,6 +7,9 @@ export const APP_CONFIG: AITool = {
   name: 'Accessibility Helper',
   href: '/ai/accessibility-helper',
   description: 'Analyze text for accessibility, bias, readability, and clarity',
+  instructions:
+    'Submit text to analyze for bias, readability, clarity, and get suggestions for improvement',
+  footer: 'Improve text accessibility with AI-powered analysis',
   icon: <Accessibility className="h-6 w-6" />,
   apiRoute: '/api/ai/accessibility-helper',
   category: 'text',

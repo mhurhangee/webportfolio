@@ -9,6 +9,8 @@ export const APP_CONFIG: AITool = {
   href: '/ai/interview-questions',
   description:
     'Generate interview questions for a candidate based on their role, mission outcome, and background',
+  instructions: 'Generate tailored interview questions based on role and context',
+  footer: 'Create better interviews with AI-generated questions',
   icon: <PenLine className="h-6 w-6" />,
   systemPrompt: ``,
   model: DEFAULT_CONFIG.model,

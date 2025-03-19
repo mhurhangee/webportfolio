@@ -7,6 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Summariser',
   href: '/ai/summariser',
   description: 'Generate summaries of longer texts',
+  instructions: 'Enter the text you want to summarize and select the summary type',
+  footer: 'Summaries help distill key information from longer texts',
   icon: <ClipboardCheck className="h-6 w-6" />,
   systemPrompt: `
 You are an expert summariser who helps users generate summaries of longer texts.

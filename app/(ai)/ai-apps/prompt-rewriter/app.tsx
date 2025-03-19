@@ -67,12 +67,9 @@ export default function BasicPromptRewriterTool() {
                     className: 'h-7 w-7 mr-2',
                   })}
                 <span>{APP_CONFIG.name}</span>
-
               </h1>
             </CardTitle>
-            <CardDescription>
-              {APP_CONFIG.instructions}
-            </CardDescription>
+            <CardDescription>{APP_CONFIG.instructions}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-6">
@@ -128,9 +125,7 @@ export default function BasicPromptRewriterTool() {
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset
             </Button>
-            <p className="text-xs text-muted-foreground">
-              {APP_CONFIG.footer}
-            </p>
+            <p className="text-xs text-muted-foreground">{APP_CONFIG.footer}</p>
           </CardFooter>
         </Card>
       </motion.div>
