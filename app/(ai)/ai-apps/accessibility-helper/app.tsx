@@ -32,17 +32,8 @@ import { type AnalysisResponse, type FeedbackItem } from './schema';
 import React from 'react';
 import { useErrorHandler } from '@/app/(ai)/lib/error-handling/client-error-handler';
 import { toastSuccess } from '@/app/(ai)/lib/error-handling/toast-manager';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 
 // Helper function to get category color
@@ -74,7 +65,7 @@ const getHighlightColor = (category: string, type: string) => {
   if (type === 'positive') {
     return 'bg-green-100 dark:bg-green-900/20 border-b-2 border-green-400';
   }
-  
+
   // Then by category
   switch (category) {
     case 'bias':
@@ -135,38 +126,38 @@ const AnnotatedText = ({ text, feedback }: { text: string; feedback: FeedbackIte
     const indices: number[] = [];
     let startIndex = 0;
     let index: number;
-    
+
     while ((index = str.indexOf(searchStr, startIndex)) > -1) {
       indices.push(index);
       startIndex = index + searchStr.length;
     }
-    
+
     return indices;
   };
 
   // Get all feedback text segments and their positions
   const allSegments: TextSegment[] = [];
-  
-  feedback.forEach(item => {
+
+  feedback.forEach((item) => {
     if (!item.exactText) return;
-    
+
     const positions = findAllOccurrences(text, item.exactText);
-    positions.forEach(position => {
+    positions.forEach((position) => {
       allSegments.push({
         start: position,
         end: position + item.exactText.length,
-        item
+        item,
       });
     });
   });
-  
+
   // Sort segments by start position
   allSegments.sort((a, b) => a.start - b.start);
-  
+
   // Simplify by using a non-overlapping approach
   const finalSegments: TextSegment[] = [];
   let lastEnd = -1;
-  
+
   for (const segment of allSegments) {
     // Only add segments that don't overlap with previously added ones
     if (segment.start >= lastEnd) {
@@ -176,9 +167,9 @@ const AnnotatedText = ({ text, feedback }: { text: string; feedback: FeedbackIte
       // For critical issues, we'll prioritize them
       // Find and remove any overlapping segments
       const overlappingIndex = finalSegments.findIndex(
-        s => s.end > segment.start && s.start < segment.end
+        (s) => s.end > segment.start && s.start < segment.end
       );
-      
+
       if (overlappingIndex !== -1) {
         finalSegments.splice(overlappingIndex, 1);
         finalSegments.push(segment);
@@ -186,35 +177,34 @@ const AnnotatedText = ({ text, feedback }: { text: string; feedback: FeedbackIte
       }
     }
   }
-  
+
   // Sort final segments by start position
   finalSegments.sort((a, b) => a.start - b.start);
-  
+
   // Build the output
   const segments: JSX.Element[] = [];
   let lastIndex = 0;
-  
+
   for (const segment of finalSegments) {
     // Add text before the current annotation
     if (segment.start > lastIndex) {
       segments.push(
-        <span key={`text-${lastIndex}`}>
-          {text.substring(lastIndex, segment.start)}
-        </span>
+        <span key={`text-${lastIndex}`}>{text.substring(lastIndex, segment.start)}</span>
       );
     }
 
     // Add the annotated text
     const annotatedText = text.substring(segment.start, segment.end);
     const item = segment.item;
-    
+
     segments.push(
       <Popover key={`annotation-${segment.start}`}>
         <PopoverTrigger asChild>
-          <span 
-            className={`relative cursor-pointer px-0.5 rounded ${
-              getHighlightColor(item.category, item.type)
-            }`}
+          <span
+            className={`relative cursor-pointer px-0.5 rounded ${getHighlightColor(
+              item.category,
+              item.type
+            )}`}
           >
             {annotatedText}
           </span>
@@ -244,24 +234,20 @@ const AnnotatedText = ({ text, feedback }: { text: string; feedback: FeedbackIte
 
   // Add any remaining text
   if (lastIndex < text.length) {
-    segments.push(
-      <span key={`text-${lastIndex}`}>
-        {text.substring(lastIndex)}
-      </span>
-    );
+    segments.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex)}</span>);
   }
 
   return <div className="whitespace-pre-wrap leading-relaxed">{segments}</div>;
 };
 
 // Score card component
-const ScoreCard = ({ 
-  label, 
-  score, 
-  colorClass 
-}: { 
-  label: string; 
-  score: number; 
+const ScoreCard = ({
+  label,
+  score,
+  colorClass,
+}: {
+  label: string;
+  score: number;
   colorClass?: string;
 }) => {
   // Determine color based on score
@@ -274,7 +260,9 @@ const ScoreCard = ({
 
   return (
     <div className="flex flex-col items-center">
-      <div className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold ${colorClass || getScoreColor(score)}`}>
+      <div
+        className={`w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold ${colorClass || getScoreColor(score)}`}
+      >
         {score}
       </div>
       <p className="mt-2 text-sm text-center">{label}</p>
@@ -297,19 +285,19 @@ export default function AccessibilityHelperTool() {
       setError('Please enter some text to analyze.');
       return;
     }
-    
+
     setIsLoading(true);
     setIsAborted(false);
     setError(null);
-    
+
     // Create a new AbortController for this request
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
-    
+
     try {
       // Switch to feedback tab immediately to show loading state
       setActiveTab('feedback');
-      
+
       const response = await fetch('/api/ai/accessibility-helper', {
         method: 'POST',
         headers: {
@@ -318,20 +306,25 @@ export default function AccessibilityHelperTool() {
         body: JSON.stringify({ text }),
         signal,
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to analyze text');
       }
-      
+
       const data = await response.json();
       console.log('API Response:', data);
-      
+
       // Ensure the response has the expected structure
-      if (!data.summary || !data.feedback || !data.summary.strengths || !data.summary.criticalIssues) {
+      if (
+        !data.summary ||
+        !data.feedback ||
+        !data.summary.strengths ||
+        !data.summary.criticalIssues
+      ) {
         throw new Error('Invalid response format from the API');
       }
-      
+
       setAnalysisResponse(data);
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
@@ -384,7 +377,8 @@ export default function AccessibilityHelperTool() {
               Analyze Text for Accessibility
             </CardTitle>
             <CardDescription>
-              Submit text to analyze for bias, readability, clarity, and get suggestions for improvement.
+              Submit text to analyze for bias, readability, clarity, and get suggestions for
+              improvement.
             </CardDescription>
           </CardHeader>
 
@@ -401,11 +395,15 @@ export default function AccessibilityHelperTool() {
             <TabsContent value="analyze" className="m-0 space-y-0">
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  {error && <PreflightError config={{ 
-                    title: "Error", 
-                    description: error, 
-                    severity: 'error' 
-                  }} />}
+                  {error && (
+                    <PreflightError
+                      config={{
+                        title: 'Error',
+                        description: error,
+                        severity: 'error',
+                      }}
+                    />
+                  )}
 
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium">Your Text</h3>
@@ -419,7 +417,8 @@ export default function AccessibilityHelperTool() {
                       disabled={isLoading}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Enter text to receive detailed accessibility analysis with specific suggestions for improvement.
+                      Enter text to receive detailed accessibility analysis with specific
+                      suggestions for improvement.
                     </p>
                   </div>
 
@@ -466,11 +465,13 @@ export default function AccessibilityHelperTool() {
 
                 {error && !isLoading && !isAborted && (
                   <div className="space-y-4">
-                    <PreflightError config={{ 
-                      title: "Error", 
-                      description: error, 
-                      severity: 'error' 
-                    }} />
+                    <PreflightError
+                      config={{
+                        title: 'Error',
+                        description: error,
+                        severity: 'error',
+                      }}
+                    />
                     <Button variant="outline" size="sm" onClick={() => setActiveTab('analyze')}>
                       Return to Input
                     </Button>
@@ -484,33 +485,49 @@ export default function AccessibilityHelperTool() {
                       <h3 className="text-lg font-semibold mb-2">Accessibility Scores</h3>
                       <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
                         <div className="flex justify-center mb-4">
-                          <div className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold ${analysisResponse.summary.overallScore >= 80 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 
-                            analysisResponse.summary.overallScore >= 60 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 
-                            analysisResponse.summary.overallScore >= 40 ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' : 
-                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'}`}>
+                          <div
+                            className={`w-24 h-24 rounded-full flex items-center justify-center text-2xl font-bold ${
+                              analysisResponse.summary.overallScore >= 80
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                : analysisResponse.summary.overallScore >= 60
+                                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                                  : analysisResponse.summary.overallScore >= 40
+                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                            }`}
+                          >
                             {analysisResponse.summary.overallScore}
                           </div>
                         </div>
                         <p className="text-center mb-4 text-sm">Overall Score</p>
                         <div className="grid grid-cols-3 gap-4">
-                          <ScoreCard 
-                            label="Bias" 
-                            score={analysisResponse.summary.biasScore} 
+                          <ScoreCard label="Bias" score={analysisResponse.summary.biasScore} />
+                          <ScoreCard
+                            label="Readability"
+                            score={analysisResponse.summary.readabilityScore}
                           />
-                          <ScoreCard 
-                            label="Readability" 
-                            score={analysisResponse.summary.readabilityScore} 
-                          />
-                          <ScoreCard 
-                            label="Clarity" 
-                            score={analysisResponse.summary.clarityScore} 
+                          <ScoreCard
+                            label="Clarity"
+                            score={analysisResponse.summary.clarityScore}
                           />
                         </div>
-                        <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-                          <p className="mb-1"><span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span> 80-100: Excellent</p>
-                          <p className="mb-1"><span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span> 60-79: Good</p>
-                          <p className="mb-1"><span className="inline-block w-3 h-3 rounded-full bg-amber-500 mr-2"></span> 40-59: Needs Improvement</p>
-                          <p><span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span> 0-39: Poor</p>
+                        <div className="mt-4 text-sm text-gray-600 dark:text-gray-400 flex flex-wrap gap-2">
+                          <p className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-green-500 mr-2"></span>
+                            80-100: Excellent
+                          </p>
+                          <p className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
+                            60-79: Good
+                          </p>
+                          <p className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
+                            40-59: Needs Improvement
+                          </p>
+                          <p className="flex items-center">
+                            <span className="inline-block w-3 h-3 rounded-full bg-red-500 mr-2"></span>
+                            0-39: Poor
+                          </p>
                         </div>
                       </div>
                     </div>

@@ -73,7 +73,10 @@ export default function Home() {
             </Link>
           </motion.div>
 
-          <motion.div variants={item} className="text-sm text-muted-foreground pt-4 sm:pt-8 hidden md:block">
+          <motion.div
+            variants={item}
+            className="text-sm text-muted-foreground pt-4 sm:pt-8 hidden md:block"
+          >
             <FlipWords
               words={[
                 'Building a better future for all with AI.',

@@ -120,7 +120,7 @@ async function handler(req: NextRequest) {
         error: (error as Error).message,
       });
       throw createApiError('ai_service_error', 'Error analyzing text', 'error', {
-        message: (error as Error).message
+        message: (error as Error).message,
       });
     }
   } catch (error) {

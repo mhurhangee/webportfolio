@@ -4,9 +4,9 @@ import { DEFAULT_CONFIG } from '@/app/(ai)/lib/defaults';
 
 export const APP_CONFIG: AITool = {
   id: 'accessibility-helper',
-  name: "Accessibility Helper",
+  name: 'Accessibility Helper',
   href: '/ai/accessibility-helper',
-  description: "Analyze text for accessibility, bias, readability, and clarity",
+  description: 'Analyze text for accessibility, bias, readability, and clarity',
   icon: <Accessibility className="h-6 w-6" />,
   apiRoute: '/api/ai/accessibility-helper',
   category: 'text',
