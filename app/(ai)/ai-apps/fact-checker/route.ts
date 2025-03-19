@@ -284,4 +284,3 @@ async function handler(req: NextRequest) {
 
 // Export the wrapped handler with automatic log flushing and error handling
 export const POST = createApiHandler(handler);
-export const factCheckerHandler = POST;
