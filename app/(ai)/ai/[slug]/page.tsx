@@ -19,6 +19,8 @@ const CustomUrlExtractionTool = dynamic(
 );
 const BasicChatTool = dynamic(() => import('@/app/(ai)/ai-apps/basic-chat/app'));
 const InterviewGenerator = dynamic(() => import('@/app/(ai)/ai-apps/interview-questions/app'));
+const FindSimilarTool = dynamic(() => import('@/app/(ai)/ai-apps/find-similar/app'));
+const AnswerEngineTool = dynamic(() => import('@/app/(ai)/ai-apps/answer-engine/app'));
 
 export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -60,6 +62,12 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
     }
     if (tool.id === 'interview-questions') {
       return <InterviewGenerator />;
+    }
+    if (tool.id === 'find-similar') {
+      return <FindSimilarTool />;
+    }
+    if (tool.id === 'answer-engine') {
+      return <AnswerEngineTool />;
     }
 
     // Default fallback

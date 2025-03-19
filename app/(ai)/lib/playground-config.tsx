@@ -9,6 +9,8 @@ import { APP_CONFIG as FridgeFriendConfig } from '../ai-apps/fridge-friend/confi
 import { APP_CONFIG as CustomUrlExtractionConfig } from '../ai-apps/custom-url-extraction/config';
 import { APP_CONFIG as BasicChatConfig } from '../ai-apps/basic-chat/config';
 import { APP_CONFIG as InterviewConfig } from '../ai-apps/interview-questions/config';
+import { APP_CONFIG as FindSimilarConfig } from '../ai-apps/find-similar/config';
+import { APP_CONFIG as AnswerEngineConfig } from '../ai-apps/answer-engine/config';
 
 // Only define the prompt rewriter for now
 export const aiTools: AITool[] = [
@@ -22,6 +24,8 @@ export const aiTools: AITool[] = [
   CustomUrlExtractionConfig,
   BasicChatConfig,
   InterviewConfig,
+  FindSimilarConfig,
+  AnswerEngineConfig,
 ];
 
 // Organize applications by category
@@ -32,14 +36,14 @@ export const aiCategories: AICategory[] = [
     apps: aiTools.filter((app) => app.category === 'prompt'),
   },
   {
+    name: 'Knowledge',
+    description: 'AI-assistance in finding information',
+    apps: aiTools.filter((app) => app.category === 'knowledge'),
+  },
+  {
     name: 'Text Analysis',
     description: 'Utilities to help you analyse text',
     apps: aiTools.filter((app) => app.category === 'text'),
-  },
-  {
-    name: 'Chat',
-    description: 'Chat with AI-powered tools',
-    apps: aiTools.filter((app) => app.category === 'chat'),
   },
   {
     name: 'Creative Tools',

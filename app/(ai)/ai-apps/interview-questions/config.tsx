@@ -5,7 +5,7 @@ import { logger } from '@/app/(ai)/lib/error-handling/logger';
 
 export const APP_CONFIG: AITool = {
   id: 'interview-questions',
-  name: 'Interview Questions Generator',
+  name: 'Interview Questions',
   href: '/ai/interview-questions',
   description:
     'Generate interview questions for a candidate based on their role, mission outcome, and background',
