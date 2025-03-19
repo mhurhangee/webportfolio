@@ -12,6 +12,7 @@ import { APP_CONFIG as InterviewConfig } from '../ai-apps/interview-questions/co
 import { APP_CONFIG as FindSimilarConfig } from '../ai-apps/find-similar/config';
 import { APP_CONFIG as AnswerEngineConfig } from '../ai-apps/answer-engine/config';
 import { APP_CONFIG as FactCheckerConfig } from '../ai-apps/fact-checker/config';
+import { APP_CONFIG as AccessibilityHelperConfig } from '../ai-apps/accessibility-helper/config';
 
 // Only define the prompt rewriter for now
 export const aiTools: AITool[] = [
@@ -28,6 +29,7 @@ export const aiTools: AITool[] = [
   FindSimilarConfig,
   AnswerEngineConfig,
   FactCheckerConfig,
+  AccessibilityHelperConfig,
 ];
 
 // Organize applications by category

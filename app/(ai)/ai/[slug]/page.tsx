@@ -22,6 +22,7 @@ const InterviewGenerator = dynamic(() => import('@/app/(ai)/ai-apps/interview-qu
 const FindSimilarTool = dynamic(() => import('@/app/(ai)/ai-apps/find-similar/app'));
 const AnswerEngineTool = dynamic(() => import('@/app/(ai)/ai-apps/answer-engine/app'));
 const FactCheckerTool = dynamic(() => import('@/app/(ai)/ai-apps/fact-checker/app'));
+const AccessibilityHelperTool = dynamic(() => import('@/app/(ai)/ai-apps/accessibility-helper/app'));
 
 export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -73,7 +74,9 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
     if (tool.id === 'fact-checker') {
       return <FactCheckerTool />;
     }
-
+    if (tool.id === 'accessibility-helper') {
+      return <AccessibilityHelperTool />;
+    }
     // Default fallback
     return <div>Tool type not supported yet</div>;
   };
