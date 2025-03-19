@@ -10,8 +10,9 @@ export interface AITool {
   icon: ReactNode; // Icon componentom';
   systemPrompt?: string; // System prompt if applicable
   model: LanguageModelV1; // AI model e.g. groq('llama-3.1-8b-instant') or openai('gpt-4o-mini')
+  externalModel?: string; // External model name
   apiRoute: string; // API route for this tool
-  category: 'prompt' | 'text' | 'creative' | 'chat'; // Category for grouping
+  category: 'prompt' | 'text' | 'creative' | 'knowledge'; // Category for grouping
   color: string; // Gradient color for UI
   isNew?: boolean; // Flag for new tools
   isExperimental?: boolean; // Flag for experimental tools

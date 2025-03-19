@@ -15,12 +15,6 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 export function Sidebar({ className, ...props }: SidebarProps) {
   const pathname = usePathname();
 
-  // Get icons for small screens
-  const getIcon = (href: string) => {
-    const app = getAppByHref(href);
-    return app?.icon;
-  };
-
   return (
     <div className={cn('pb-12', className)} {...props}>
       <div className="space-y-6 py-4">
@@ -43,7 +37,7 @@ export function Sidebar({ className, ...props }: SidebarProps) {
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-10rem)]">
+        <ScrollArea className="min-h-[calc(100vh-10rem)]">
           {aiCategories.map((category) => (
             <div key={category.name} className="px-3 py-2">
               <h2 className="mb-2 px-2 text-lg font-semibold tracking-tight border-b pb-2">

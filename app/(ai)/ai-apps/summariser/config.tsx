@@ -13,6 +13,7 @@ You are an expert summariser who helps users generate summaries of longer texts.
 
 Use the provided schema to structure your response as JSON.
 `,
+  externalModel: 'exa-pro',
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/summariser',
   category: 'text',

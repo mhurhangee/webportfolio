@@ -18,6 +18,10 @@ const CustomUrlExtractionTool = dynamic(
   () => import('@/app/(ai)/ai-apps/custom-url-extraction/app')
 );
 const BasicChatTool = dynamic(() => import('@/app/(ai)/ai-apps/basic-chat/app'));
+const InterviewGenerator = dynamic(() => import('@/app/(ai)/ai-apps/interview-questions/app'));
+const FindSimilarTool = dynamic(() => import('@/app/(ai)/ai-apps/find-similar/app'));
+const AnswerEngineTool = dynamic(() => import('@/app/(ai)/ai-apps/answer-engine/app'));
+const FactCheckerTool = dynamic(() => import('@/app/(ai)/ai-apps/fact-checker/app'));
 
 export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -57,6 +61,19 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
     if (tool.id === 'basic-chat') {
       return <BasicChatTool />;
     }
+    if (tool.id === 'interview-questions') {
+      return <InterviewGenerator />;
+    }
+    if (tool.id === 'find-similar') {
+      return <FindSimilarTool />;
+    }
+    if (tool.id === 'answer-engine') {
+      return <AnswerEngineTool />;
+    }
+    if (tool.id === 'fact-checker') {
+      return <FactCheckerTool />;
+    }
+
     // Default fallback
     return <div>Tool type not supported yet</div>;
   };
