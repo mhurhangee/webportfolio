@@ -11,6 +11,7 @@ import { APP_CONFIG as BasicChatConfig } from '../ai-apps/basic-chat/config';
 import { APP_CONFIG as InterviewConfig } from '../ai-apps/interview-questions/config';
 import { APP_CONFIG as FindSimilarConfig } from '../ai-apps/find-similar/config';
 import { APP_CONFIG as AnswerEngineConfig } from '../ai-apps/answer-engine/config';
+import { APP_CONFIG as FactCheckerConfig } from '../ai-apps/fact-checker/config';
 
 // Only define the prompt rewriter for now
 export const aiTools: AITool[] = [
@@ -26,6 +27,7 @@ export const aiTools: AITool[] = [
   InterviewConfig,
   FindSimilarConfig,
   AnswerEngineConfig,
+  FactCheckerConfig,
 ];
 
 // Organize applications by category

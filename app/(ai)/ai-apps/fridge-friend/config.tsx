@@ -28,7 +28,7 @@ YOU MUST ALWAYS RETURN PROPERLY STRUCTURED JSON according to the schema provided
   apiRoute: '/api/ai/fridge-friend',
   category: 'creative',
   color: 'from-orange-500 to-amber-400',
-  isNew: true,
+  isNew: false,
   temperature: 0.7,
   maxTokens: 20000,
 };
