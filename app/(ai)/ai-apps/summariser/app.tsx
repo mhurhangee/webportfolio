@@ -133,19 +133,20 @@ export default function KeywordExtractorTool() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="visible" className="space-y-8">
-      <motion.div variants={item} className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{APP_CONFIG.name}</h1>
-        <p className="text-muted-foreground">{APP_CONFIG.description}</p>
-      </motion.div>
-
       <motion.div variants={item}>
-        <Card className="overflow-hidden">
+        <Card className="h-full overflow-hidden">
+          <div className={`h-2 w-full bg-gradient-to-r ${APP_CONFIG.color}`} />
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <ClipboardCheck className="mr-2 h-5 w-5 text-primary" />
-              Summarise Text
+            <CardTitle>
+              <h1 className="flex items-center text-2xl md:text-3xl font-bold tracking-tight">
+                {APP_CONFIG.icon &&
+                  React.cloneElement(APP_CONFIG.icon as React.ReactElement, {
+                    className: 'h-7 w-7 mr-2',
+                  })}
+                <span>{APP_CONFIG.name}</span>
+              </h1>
             </CardTitle>
-            <CardDescription>Generate summaries of longer texts</CardDescription>
+            <CardDescription>{APP_CONFIG.description}</CardDescription>
           </CardHeader>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -261,13 +262,13 @@ export default function KeywordExtractorTool() {
             </TabsContent>
           </Tabs>
 
-          <CardFooter className="flex justify-between border-t p-6">
+          <CardFooter className="flex justify-between">
             <Button variant="outline" size="sm" onClick={handleReset} disabled={isLoading}>
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset
             </Button>
             <p className="text-xs text-muted-foreground">
-              Summaries help distill key information from longer texts.
+              {APP_CONFIG.footer || 'Summaries help distill key information from longer texts.'}
             </p>
           </CardFooter>
         </Card>

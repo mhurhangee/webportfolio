@@ -1,13 +1,14 @@
 import { AITool } from '@/app/(ai)/lib/types';
 import { PenLine } from 'lucide-react';
 import { DEFAULT_CONFIG } from '@/app/(ai)/lib/defaults';
-import { logger } from '@/app/(ai)/lib/error-handling/logger';
 
 export const APP_CONFIG: AITool = {
-  id: 'basic-prompt-rewriter',
-  name: 'Basic Prompt Rewriter',
-  href: '/ai/basic-prompt-rewriter',
+  id: 'prompt-rewriter',
+  name: 'Prompt Rewriter',
+  href: '/ai/prompt-rewriter',
   description: 'Improve your prompts for better AI interactions',
+  instructions: "Enter your prompt and we'll rewrite it to be more effective with AI systems.",
+  footer: 'Rewrites improve clarity, specificity, and structure.',
   icon: <PenLine className="h-6 w-6" />,
   systemPrompt: `You are an expert prompt engineer who helps users write better prompts for AI systems.
 Your task is to rewrite the user's prompt to make it more effective, clear, specific, and well-structured. T.
@@ -23,9 +24,9 @@ When rewriting prompts:
 YOU MUST ALWAYS RETURN A WRITTEN PROMPT. 
 Return only the rewritten prompt without explanation, commentary, or surrounding text.`,
   model: DEFAULT_CONFIG.model,
-  apiRoute: '/api/ai/basic-prompt-rewriter',
+  apiRoute: '/api/ai/prompt-rewriter',
   category: 'prompt',
-  color: 'from-blue-500 to-cyan-400',
+  color: 'from-red-500 to-orange-400',
   isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

@@ -7,6 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Keyword Extractor',
   href: '/ai/keyword-extractor',
   description: 'Extract keywords from text to improve searchability and organization',
+  instructions: 'Enter text to extract important keywords and phrases',
+  footer: 'Extract important keywords from any text for better organization',
   icon: <Shovel className="h-6 w-6" />,
   systemPrompt: `
 You are an expert keyword extractor who helps users identify and extract keywords from text to improve searchability and organization.
@@ -16,7 +18,7 @@ Use the provided schema to structure your response as JSON.
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/keyword-extractor',
   category: 'text',
-  color: 'from-emerald-500 to-teal-400',
+  color: 'from-amber-500 to-yellow-500',
   isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

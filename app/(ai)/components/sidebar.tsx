@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { LayoutDashboard, Sparkles } from 'lucide-react';
-import { aiCategories, getAppByHref } from '@/app/(ai)/lib/playground-config';
+import { LayoutDashboard } from 'lucide-react';
+import { aiCategories } from '@/app/(ai)/lib/demos-config';
 import React from 'react';
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -20,8 +20,7 @@ export function Sidebar({ className, ...props }: SidebarProps) {
       <div className="space-y-6 py-4">
         <div className="px-3 py-2">
           <div className="flex items-center px-2 mb-2">
-            <Sparkles className="h-5 w-5 mr-2 text-primary" />
-            <h2 className="text-xl font-semibold tracking-tight">AI Playground</h2>
+            <h2 className="text-xl font-semibold tracking-tight">AI Demos</h2>
           </div>
           <div className="space-y-1">
             <Button

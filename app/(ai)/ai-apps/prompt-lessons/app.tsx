@@ -16,6 +16,7 @@ import LessonBrowser from './components/lesson-browser';
 import LessonContentView from './components/lesson-content';
 import { useErrorHandler } from '@/app/(ai)/lib/error-handling/client-error-handler';
 import { toastSuccess } from '@/app/(ai)/lib/error-handling/toast-manager';
+import { cloneElement, ReactElement } from 'react';
 
 export default function PromptLessonsTool() {
   const [activeTab, setActiveTab] = useState('browse');
@@ -139,13 +140,24 @@ export default function PromptLessonsTool() {
       {/* Reference div at the top of the component for scrolling */}
       <div ref={topRef} aria-hidden={true} />
 
-      <motion.div variants={item} className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{APP_CONFIG.name}</h1>
-        <p className="text-muted-foreground">{APP_CONFIG.description}</p>
-      </motion.div>
-
       <motion.div variants={item}>
-        <Card className="overflow-hidden">
+        <Card className="h-full overflow-hidden">
+          <div className={`h-2 w-full bg-gradient-to-r ${APP_CONFIG.color}`} />
+          <div className="px-6 pt-6">
+            <div className="flex items-center mb-4">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center">
+                {APP_CONFIG.icon &&
+                  cloneElement(APP_CONFIG.icon as ReactElement, {
+                    className: 'h-7 w-7 mr-2',
+                  })}
+                <span>{APP_CONFIG.name}</span>
+              </h1>
+            </div>
+            <p className="text-muted-foreground mb-4">
+              {APP_CONFIG.instructions || APP_CONFIG.description}
+            </p>
+          </div>
+
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-4">
             <div className="px-6">
               <TabsList className="grid w-full grid-cols-2">
@@ -183,7 +195,7 @@ export default function PromptLessonsTool() {
                 )}
               </CardContent>
 
-              <div className="flex items-center justify-center mt-4 mb-6">
+              <div className="flex items-center justify-between px-6 py-4">
                 <Button
                   variant="outline"
                   size="sm"
@@ -193,6 +205,9 @@ export default function PromptLessonsTool() {
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Back to Lessons
                 </Button>
+                <p className="text-xs text-muted-foreground">
+                  {APP_CONFIG.footer || 'Master prompt engineering through practice'}
+                </p>
               </div>
             </TabsContent>
           </Tabs>

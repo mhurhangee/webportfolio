@@ -7,6 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Prompt Lessons',
   href: '/ai/prompt-lessons',
   description: 'Learn prompt engineering through interactive, hands-on lessons',
+  instructions: 'Browse and complete interactive lessons on prompt engineering',
+  footer: 'Master the art of effective AI prompting',
   icon: <BookOpen className="h-6 w-6" />,
   systemPrompt: `
     # Role
@@ -20,7 +22,7 @@ export const APP_CONFIG: AITool = {
   model: groq('llama-3.3-70b-versatile'),
   apiRoute: '/api/ai/prompt-lessons',
   category: 'prompt',
-  color: 'from-blue-500 to-indigo-400',
+  color: 'from-red-500 to-orange-400',
   isNew: true,
   temperature: 0.2,
   maxTokens: 1500,

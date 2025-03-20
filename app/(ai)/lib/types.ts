@@ -7,6 +7,8 @@ export interface AITool {
   name: string; // Display name
   href: string; // Full URL path
   description: string; // Short description
+  instructions?: string; // Instructions for the tool
+  footer?: string;
   icon: ReactNode; // Icon componentom';
   systemPrompt?: string; // System prompt if applicable
   model: LanguageModelV1; // AI model e.g. groq('llama-3.1-8b-instant') or openai('gpt-4o-mini')

@@ -87,24 +87,6 @@ export function Hero() {
         <motion.div variants={item} className="flex justify-center mt-8">
           <CTAButton />
         </motion.div>
-        {/*
-        <motion.div 
-        variants={item}
-        className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-          <Link href="/ai">
-            <Button className="text-md px-8 py-6 space-x-2">
-              <Briefcase className="h-5 w-5 animate" />
-              <span>Services</span>
-            </Button>
-          </Link>
-
-          <Link href="/aboutme">
-            <Button variant="outline" className="text-md py-6 space-x-2">
-              <Bot className="h-5 w-5" />
-              <span>AI Playground</span>
-            </Button>
-          </Link>
-        </motion.div>*/}
       </div>
       <motion.div variants={item} className="mt-12">
         <ScrollArrow />

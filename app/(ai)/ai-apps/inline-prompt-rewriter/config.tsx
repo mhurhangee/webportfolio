@@ -7,6 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Inline Prompt Rewriter',
   href: '/ai/inline-prompt-rewriter',
   description: 'Improve your prompts quickly for better AI interactions',
+  instructions: 'Enter your prompt, improve it inline, or generate a response',
+  footer: 'Click the sparkles icon to improve your prompt instantly',
   icon: <Sparkles className="h-6 w-6" />,
   systemPrompt: `You are an expert prompt engineer who helps users write better prompts for AI systems.
 Your task is to rewrite the user's prompt to make it more effective, clear, specific, and well-structured. T.
@@ -24,7 +26,7 @@ Return only the rewritten prompt without explanation, commentary, or surrounding
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/inline-prompt-rewriter',
   category: 'prompt',
-  color: 'from-blue-500 to-cyan-400',
+  color: 'from-red-500 to-orange-400',
   isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

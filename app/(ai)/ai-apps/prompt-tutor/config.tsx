@@ -7,6 +7,9 @@ export const APP_CONFIG: AITool = {
   name: 'Prompt Tutor',
   href: '/ai/prompt-tutor',
   description: 'Learn how to craft effective AI prompts',
+  instructions:
+    "Submit a prompt you've written and receive personalized feedback to improve your skills",
+  footer: 'Improve your prompt writing skills with expert feedback',
   icon: <BookOpen className="h-6 w-6" />,
   systemPrompt: `You are an expert prompt engineering tutor who helps users learn how to write more effective prompts for AI systems.
 
@@ -21,7 +24,7 @@ When analyzing user prompts:
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/prompt-tutor',
   category: 'prompt',
-  color: 'from-purple-500 to-indigo-400',
+  color: 'from-red-500 to-orange-400',
   isNew: false,
   temperature: DEFAULT_CONFIG.temperature,
   maxTokens: DEFAULT_CONFIG.maxTokens,

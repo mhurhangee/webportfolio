@@ -12,10 +12,10 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { container, item } from '@/lib/animation';
-import { aiCategories } from '@/app/(ai)/lib/playground-config';
+import { aiCategories } from '@/app/(ai)/lib/demos-config';
 import { ArrowRight } from 'lucide-react';
 
-export default function AIPlayground() {
+export default function AIDemos() {
   return (
     <motion.div
       variants={container}
@@ -24,9 +24,9 @@ export default function AIPlayground() {
       className="space-y-8 w-full"
     >
       <motion.div variants={item} className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">AI Playground</h1>
+        <h1 className="text-3xl font-bold tracking-tight">AI Demos</h1>
         <p className="text-muted-foreground">
-          Explore a collection of AI applications built with Vercel&apos;s AI SDK.
+          Explore a collection of demo generative AI applications built by me.
         </p>
       </motion.div>
 

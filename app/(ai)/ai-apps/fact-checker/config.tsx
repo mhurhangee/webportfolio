@@ -7,6 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Fact Checker',
   href: '/ai/fact-checker',
   description: 'Verify the accuracy of factual claims in text',
+  instructions: 'Submit text to identify and verify factual claims using AI and web search',
+  footer: 'Verify facts and improve the accuracy of your content',
   icon: <Shield className="h-6 w-6" />,
   systemPrompt: `You are a fact-checking assistant that helps users verify the accuracy of claims in text.
 
@@ -22,7 +24,7 @@ When fact-checking text:
   model: DEFAULT_CONFIG.model,
   apiRoute: '/api/ai/fact-checker',
   category: 'knowledge',
-  color: 'from-blue-500 to-green-400',
+  color: 'from-blue-500 to-cyan-400',
   isNew: true,
   temperature: 0.2, // Lower temperature for more factual responses
   maxTokens: DEFAULT_CONFIG.maxTokens,

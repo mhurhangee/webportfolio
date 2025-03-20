@@ -7,6 +7,8 @@ export const APP_CONFIG: AITool = {
   name: 'Fridge Friend',
   href: '/ai/fridge-friend',
   description: 'Create delicious recipes using only ingredients you have at home',
+  instructions: 'Create delicious recipes using only the ingredients you have on hand',
+  footer: 'Turn your available ingredients into delicious meals',
   icon: <UtensilsCrossed className="h-6 w-6" />,
   systemPrompt: `You are a creative and resourceful chef who specializes in creating recipes from limited ingredients.
 
@@ -27,7 +29,7 @@ YOU MUST ALWAYS RETURN PROPERLY STRUCTURED JSON according to the schema provided
   model: groq('llama-3.3-70b-versatile'),
   apiRoute: '/api/ai/fridge-friend',
   category: 'creative',
-  color: 'from-orange-500 to-amber-400',
+  color: 'from-green-500 to-emerald-400',
   isNew: false,
   temperature: 0.7,
   maxTokens: 20000,

@@ -1,11 +1,9 @@
 import React from 'react';
-import { getToolBySlug } from '@/app/(ai)/lib/playground-config';
+import { getToolBySlug } from '@/app/(ai)/lib/demos-config';
 import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
-const BasicPromptRewriterTool = dynamic(
-  () => import('@/app/(ai)/ai-apps/basic-prompt-rewriter/app')
-);
+const BasicPromptRewriterTool = dynamic(() => import('@/app/(ai)/ai-apps/prompt-rewriter/app'));
 const PromptTutorTool = dynamic(() => import('@/app/(ai)/ai-apps/prompt-tutor/app'));
 const PromptLessonsTool = dynamic(() => import('@/app/(ai)/ai-apps/prompt-lessons/app'));
 const KeywordExtractorTool = dynamic(() => import('@/app/(ai)/ai-apps/keyword-extractor/app'));
@@ -22,6 +20,9 @@ const InterviewGenerator = dynamic(() => import('@/app/(ai)/ai-apps/interview-qu
 const FindSimilarTool = dynamic(() => import('@/app/(ai)/ai-apps/find-similar/app'));
 const AnswerEngineTool = dynamic(() => import('@/app/(ai)/ai-apps/answer-engine/app'));
 const FactCheckerTool = dynamic(() => import('@/app/(ai)/ai-apps/fact-checker/app'));
+const AccessibilityHelperTool = dynamic(
+  () => import('@/app/(ai)/ai-apps/accessibility-helper/app')
+);
 
 export default async function ToolPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -34,7 +35,7 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
 
   // Render the appropriate tool UI based on the tool type
   const renderToolUI = () => {
-    if (tool.id === 'basic-prompt-rewriter') {
+    if (tool.id === 'prompt-rewriter') {
       return <BasicPromptRewriterTool />;
     }
     if (tool.id === 'prompt-tutor') {
@@ -73,9 +74,11 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
     if (tool.id === 'fact-checker') {
       return <FactCheckerTool />;
     }
-
+    if (tool.id === 'accessibility-helper') {
+      return <AccessibilityHelperTool />;
+    }
     // Default fallback
-    return <div>Tool type not supported yet</div>;
+    return notFound();
   };
 
   return <div className="container max-w-4xl py-10">{renderToolUI()}</div>;
