@@ -35,6 +35,9 @@ importers:
       '@mastra/client-js':
         specifier: ^0.1.9
         version: 0.1.9(react@19.0.0)
+      '@mastra/core':
+        specifier: ^0.6.3
+        version: 0.6.3(react@19.0.0)
       '@radix-ui/react-accordion':
         specifier: ^1.2.3
         version: 1.2.3(@types/react-dom@18.3.1)(@types/react@18.3.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -726,8 +729,8 @@ packages:
   '@mastra/client-js@0.1.9':
     resolution: {integrity: sha512-u4oZOpwTFLbAkbqNWqyclpJHdsLDZDaI/FsvMEOmSdBo9JEoR/uG99/HfyFjlMvCKBNEXZrmMCGzq5Y1cjQYNg==}
 
-  '@mastra/core@0.6.1':
-    resolution: {integrity: sha512-5J/+Rwi2E809RXlZpgEIBo7i0ruOb8kDCy1Su0eTjqkYvq1hvfJ07YHzAI67bDYmA6G0LZ763KCsUL9rRuxkiw==}
+  '@mastra/core@0.6.3':
+    resolution: {integrity: sha512-+2aK7CfO+ugK5TbqvDMkpuiwnsEo8LH4AYTE/v3hnmbZ/t52w653SRA1dOsywkZ2i05E7rITJbTKsP0W/oPqrw==}
     engines: {node: '>=20'}
 
   '@mdx-js/mdx@3.1.0':
@@ -5620,7 +5623,7 @@ snapshots:
 
   '@mastra/client-js@0.1.9(react@19.0.0)':
     dependencies:
-      '@mastra/core': 0.6.1(react@19.0.0)
+      '@mastra/core': 0.6.3(react@19.0.0)
       json-schema: 0.4.0
       zod: 3.24.2
       zod-to-json-schema: 3.24.4(zod@3.24.2)
@@ -5632,7 +5635,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@mastra/core@0.6.1(react@19.0.0)':
+  '@mastra/core@0.6.3(react@19.0.0)':
     dependencies:
       '@libsql/client': 0.14.0
       '@opentelemetry/api': 1.9.0

@@ -5,6 +5,7 @@ const { withLogtail } = require('@logtail/next');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: ["@mastra/*"],
   images: {
     remotePatterns: [
       {
